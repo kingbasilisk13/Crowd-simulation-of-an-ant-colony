@@ -3,6 +3,10 @@
 // Includes & Forward Declarations
 //-----------------------------------------------------------------
 #include "framework/EliteInterfaces/EIApp.h"
+#include "AntTypes/AntBase.h"
+#include "AntTypes/QueenAnt.h"
+#include "AntTypes/SoldierAnt.h"
+#include "AntTypes/WorkerAnt.h"
 
 //--- Includes and Forward Declarations ---
 
@@ -53,8 +57,9 @@ private:
 	float m_homeRadius{ 20.f };
 	
 	//Ant Agent(s)
-	AntAgent* m_pAntAgent{ nullptr };
 	std::vector<AntAgent*> m_pAnts{};
+
+	
 
 	//Ant parameters
 	float m_AntSpawnInterval{ 0.5f };
@@ -69,6 +74,14 @@ private:
 
 	void CheckTakeFoodSources(AntAgent* pAgent);
 	void CheckDropFood(AntAgent* pAgent);
+
+	//base ants
+	QueenAnt* m_pQueen{ nullptr };
+	SoldierAnt* m_pSoldier{ nullptr };
+	WorkerAnt* m_pWorker{ nullptr };
+
+
+
 
 	//C++ make the class non-copyable
 	App_InfluenceMap(const App_InfluenceMap&) = delete;

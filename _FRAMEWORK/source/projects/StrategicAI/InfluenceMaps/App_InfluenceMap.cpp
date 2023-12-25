@@ -14,7 +14,9 @@ App_InfluenceMap::~App_InfluenceMap()
 {
 	SAFE_DELETE(m_pInfluenceMap_Food);
 	SAFE_DELETE(m_pInfluenceMap_Home);
-//	SAFE_DELETE(m_pAntAgent);
+	SAFE_DELETE(m_pQueen);
+	SAFE_DELETE(m_pSoldier);
+	SAFE_DELETE(m_pWorker);
 
 	for (FoodSource* pFood : m_pFoodVec)
 	{
@@ -57,12 +59,24 @@ void App_InfluenceMap::Start()
 		m_pFoodVec.emplace_back(new FoodSource(pos, FOOD_AMOUNT));
 	}
 
+	//spawn ants
 	for(int i{0}; i < MAX_AMOUNT_ANTS; ++i)
 	{
 		AntAgent* newAnt = new AntAgent(m_pInfluenceMap_Food, m_pInfluenceMap_Home);
 		newAnt->SetPosition(m_homePosition);
 		m_pAnts.push_back(newAnt);
 	}
+
+	//create queen
+	m_pQueen = new QueenAnt();
+	m_pQueen->SetPosition(m_homePosition);
+
+	m_pSoldier = new SoldierAnt();
+	m_pSoldier->SetPosition(m_homePosition);
+
+	m_pWorker = new WorkerAnt();
+	m_pWorker->SetPosition(m_homePosition);
+
 }
 
 void App_InfluenceMap::Update(float deltaTime)
@@ -91,12 +105,6 @@ void App_InfluenceMap::Update(float deltaTime)
 	m_pInfluenceMap_Food->Update(deltaTime);
 	m_pInfluenceMap_Home->Update(deltaTime);
 
-	//Update ant agent
-	/*m_pAntAgent->Update(deltaTime);
-	m_pAntAgent->TrimToWorld(400.f, false);
-	CheckTakeFoodSources(m_pAntAgent);
-	CheckDropFood(m_pAntAgent);*/
-
 	if(m_pAnts.size() < MAX_AMOUNT_ANTS)
 	{
 		m_AntSpawnTimer += deltaTime;
@@ -118,6 +126,9 @@ void App_InfluenceMap::Update(float deltaTime)
 		CheckDropFood(ant);
 	}
 
+	m_pQueen->Update(deltaTime);
+	m_pSoldier->Update(deltaTime);
+	m_pWorker->Update(deltaTime);
 
 	UpdateUI();
 }
@@ -200,14 +211,6 @@ void App_InfluenceMap::UpdateUI()
 	ImGui::SliderFloat("Sample Angle", &m_AntSampleAngle, 0.f, 180.f, "%.2");
 	ImGui::Checkbox("Render debug", &m_RenderAntDebug);
 
-	//m_pAntAgent->SetDebugRenderingEnabled(m_RenderAntDebug); //Only the first ant!!!
-
-	////Apply parameters to ant(s)
-	//m_pAntAgent->SetInfluencePerSecond(m_InfluencePerSecond);
-	//m_pAntAgent->SetWanderAmount(m_AntWanderPct);
-	//m_pAntAgent->SetSampleDistance(m_AntSampleDist);
-	//m_pAntAgent->SetSampleAngle(m_AntSampleAngle);
-
 	for (AntAgent* const ant : m_pAnts)
 	{
 		ant->SetInfluencePerSecond(m_InfluencePerSecond);
@@ -224,10 +227,6 @@ void App_InfluenceMap::UpdateUI()
 void App_InfluenceMap::Render(float deltaTime) const
 {
 	DEBUGRENDERER2D->DrawCircle(m_homePosition, m_homeRadius, { 1.f, 1.f, 0.f }, DEBUGRENDERER2D->NextDepthSlice());
-
-	/*m_pInfluenceMap_Home->Render();
-
-	m_pInfluenceMap_Food->Render();*/
 
 	if (m_RenderInfluenceMap_Food)
 		m_pInfluenceMap_Food->Render();
@@ -247,6 +246,10 @@ void App_InfluenceMap::Render(float deltaTime) const
 	{
 		ant->Render(deltaTime);
 	}
+
+	m_pQueen->Render(deltaTime);
+	m_pSoldier->Render(deltaTime);
+	m_pWorker->Render(deltaTime);
 }
 
 
