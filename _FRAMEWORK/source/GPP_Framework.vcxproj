@@ -186,7 +186,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="projects\StrategicAI\InfluenceMaps\AntTypes\AntBase.cpp" />
     <ClCompile Include="framework\EliteAI\EliteDecisionMaking\EliteBehaviorTree\EBehaviorTree.cpp" />
     <ClCompile Include="framework\EliteAI\EliteDecisionMaking\EliteFiniteStateMachine\EFiniteStateMachine.cpp" />
     <ClCompile Include="framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\EAStar.cpp" />
@@ -214,6 +213,11 @@
     <ClCompile Include="framework\EliteWindow\SDLWindow\SDLWindow.cpp" />
     <ClCompile Include="framework\EliteRendering\SDLIntegration\SDLHelpers\gl3w.c" />
     <ClCompile Include="framework\main.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\Ants\AntBase.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\Ants\QueenAnt.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\Ants\SoldierAnt.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\Ants\WorkerAnt.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\App_CrowdSimulation.cpp" />
     <ClCompile Include="projects\DecisionMaking\BehaviorTrees\App_BT.cpp" />
     <ClCompile Include="projects\DecisionMaking\FiniteStateMachines\App_FSM.cpp" />
     <ClCompile Include="projects\DecisionMaking\FiniteStateMachines\StatesAndTransitions.cpp" />
@@ -239,18 +243,14 @@
     <ClCompile Include="projects\StrategicAI\InfluenceMaps\AntTypes\AntAgent.cpp" />
     <ClCompile Include="projects\StrategicAI\InfluenceMaps\AntTypes\FoodSource.cpp" />
     <ClCompile Include="projects\StrategicAI\InfluenceMaps\App_InfluenceMap.cpp" />
-    <ClCompile Include="projects\StrategicAI\InfluenceMaps\AntTypes\QueenAnt.cpp" />
-    <ClCompile Include="projects\StrategicAI\InfluenceMaps\AntTypes\SoldierAnt.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Exam|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Exam|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="projects\StrategicAI\InfluenceMaps\AntTypes\WorkerAnt.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="projects\StrategicAI\InfluenceMaps\AntTypes\AntBase.h" />
     <ClInclude Include="framework\EliteAI\EliteData\EBlackboard.h" />
     <ClInclude Include="framework\EliteAI\EliteDecisionMaking\EDecisionMaking.h" />
     <ClInclude Include="framework\EliteAI\EliteDecisionMaking\EliteBehaviorTree\EBehaviorTree.h" />
@@ -315,6 +315,11 @@
     <ClInclude Include="framework\EliteWindow\EWindowBase.h" />
     <ClInclude Include="framework\EliteWindow\SDLWindow\SDLWindow.h" />
     <ClInclude Include="projects\App_Selector.h" />
+    <ClInclude Include="projects\CrowedSimulation\Ants\AntBase.h" />
+    <ClInclude Include="projects\CrowedSimulation\Ants\QueenAnt.h" />
+    <ClInclude Include="projects\CrowedSimulation\Ants\SoldierAnt.h" />
+    <ClInclude Include="projects\CrowedSimulation\Ants\WorkerAnt.h" />
+    <ClInclude Include="projects\CrowedSimulation\App_CrowdSimulation.h" />
     <ClInclude Include="projects\DecisionMaking\BehaviorTrees\App_BT.h" />
     <ClInclude Include="projects\DecisionMaking\BehaviorTrees\Behaviors.h" />
     <ClInclude Include="projects\DecisionMaking\FiniteStateMachines\App_FSM.h" />
@@ -342,10 +347,7 @@
     <ClInclude Include="projects\StrategicAI\InfluenceMaps\AntTypes\AntAgent.h" />
     <ClInclude Include="projects\StrategicAI\InfluenceMaps\AntTypes\FoodSource.h" />
     <ClInclude Include="projects\StrategicAI\InfluenceMaps\App_InfluenceMap.h" />
-    <ClInclude Include="projects\StrategicAI\InfluenceMaps\AntTypes\QueenAnt.h" />
-    <ClInclude Include="projects\StrategicAI\InfluenceMaps\AntTypes\SoldierAnt.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="projects\StrategicAI\InfluenceMaps\AntTypes\WorkerAnt.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

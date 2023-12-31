@@ -11,7 +11,8 @@
 //#define ActiveApp_NavMesh
 //#define ActiveApp_FSM
 //#define ActiveApp_BT
-#define ActiveApp_InfluenceMap
+//#define ActiveApp_InfluenceMap
+#define ActiveApp_CrowdSimulation
 
 //---------- Registered Applications -----------
 #ifdef ActiveApp_Sandbox
@@ -62,6 +63,11 @@ typedef App_BT CurrentApp;
 #ifdef ActiveApp_InfluenceMap
 #include "projects/StrategicAI/InfluenceMaps/App_InfluenceMap.h"
 typedef App_InfluenceMap CurrentApp;
+#endif
+
+#ifdef ActiveApp_CrowdSimulation
+#include "projects/CrowedSimulation/App_CrowdSimulation.h"
+typedef App_CrowdSimulation CurrentApp;
 #endif
 
 

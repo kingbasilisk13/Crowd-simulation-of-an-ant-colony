@@ -14,9 +14,9 @@ App_InfluenceMap::~App_InfluenceMap()
 {
 	SAFE_DELETE(m_pInfluenceMap_Food);
 	SAFE_DELETE(m_pInfluenceMap_Home);
-	SAFE_DELETE(m_pQueen);
+	/*SAFE_DELETE(m_pQueen);
 	SAFE_DELETE(m_pSoldier);
-	SAFE_DELETE(m_pWorker);
+	SAFE_DELETE(m_pWorker);*/
 
 	for (FoodSource* pFood : m_pFoodVec)
 	{
@@ -68,14 +68,14 @@ void App_InfluenceMap::Start()
 	}
 
 	//create queen
-	m_pQueen = new QueenAnt();
+	/*m_pQueen = new QueenAnt();
 	m_pQueen->SetPosition(m_homePosition);
 
 	m_pSoldier = new SoldierAnt();
 	m_pSoldier->SetPosition(m_homePosition);
 
 	m_pWorker = new WorkerAnt();
-	m_pWorker->SetPosition(m_homePosition);
+	m_pWorker->SetPosition(m_homePosition);*/
 
 }
 
@@ -126,9 +126,9 @@ void App_InfluenceMap::Update(float deltaTime)
 		CheckDropFood(ant);
 	}
 
-	m_pQueen->Update(deltaTime);
+	/*m_pQueen->Update(deltaTime);
 	m_pSoldier->Update(deltaTime);
-	m_pWorker->Update(deltaTime);
+	m_pWorker->Update(deltaTime);*/
 
 	UpdateUI();
 }
@@ -247,9 +247,9 @@ void App_InfluenceMap::Render(float deltaTime) const
 		ant->Render(deltaTime);
 	}
 
-	m_pQueen->Render(deltaTime);
+	/*m_pQueen->Render(deltaTime);
 	m_pSoldier->Render(deltaTime);
-	m_pWorker->Render(deltaTime);
+	m_pWorker->Render(deltaTime);*/
 }
 
 

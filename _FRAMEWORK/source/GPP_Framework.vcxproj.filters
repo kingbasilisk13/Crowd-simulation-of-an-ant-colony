@@ -54,10 +54,11 @@
     <ClCompile Include="projects\StrategicAI\InfluenceMaps\AntTypes\FoodSource.cpp" />
     <ClCompile Include="projects\StrategicAI\InfluenceMaps\App_InfluenceMap.cpp" />
     <ClCompile Include="framework\EliteAI\EliteGraphs\EliteInfluenceMap\EInfluenceMap.cpp" />
-    <ClCompile Include="projects\StrategicAI\InfluenceMaps\AntTypes\AntBase.cpp" />
-    <ClCompile Include="projects\StrategicAI\InfluenceMaps\AntTypes\QueenAnt.cpp" />
-    <ClCompile Include="projects\StrategicAI\InfluenceMaps\AntTypes\WorkerAnt.cpp" />
-    <ClCompile Include="projects\StrategicAI\InfluenceMaps\AntTypes\SoldierAnt.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\Ants\AntBase.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\Ants\QueenAnt.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\Ants\SoldierAnt.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\Ants\WorkerAnt.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\App_CrowdSimulation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -152,10 +153,11 @@
     <ClInclude Include="projects\StrategicAI\InfluenceMaps\AntTypes\FoodSource.h" />
     <ClInclude Include="projects\StrategicAI\InfluenceMaps\App_InfluenceMap.h" />
     <ClInclude Include="framework\EliteAI\EliteGraphs\EliteInfluenceMap\EInfluenceMap.h" />
-    <ClInclude Include="projects\StrategicAI\InfluenceMaps\AntTypes\AntBase.h" />
-    <ClInclude Include="projects\StrategicAI\InfluenceMaps\AntTypes\QueenAnt.h" />
-    <ClInclude Include="projects\StrategicAI\InfluenceMaps\AntTypes\WorkerAnt.h" />
-    <ClInclude Include="projects\StrategicAI\InfluenceMaps\AntTypes\SoldierAnt.h" />
+    <ClInclude Include="projects\CrowedSimulation\Ants\AntBase.h" />
+    <ClInclude Include="projects\CrowedSimulation\Ants\QueenAnt.h" />
+    <ClInclude Include="projects\CrowedSimulation\Ants\SoldierAnt.h" />
+    <ClInclude Include="projects\CrowedSimulation\Ants\WorkerAnt.h" />
+    <ClInclude Include="projects\CrowedSimulation\App_CrowdSimulation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

@@ -3,10 +3,10 @@
 // Includes & Forward Declarations
 //-----------------------------------------------------------------
 #include "framework/EliteInterfaces/EIApp.h"
-#include "AntTypes/AntBase.h"
-#include "AntTypes/QueenAnt.h"
-#include "AntTypes/SoldierAnt.h"
-#include "AntTypes/WorkerAnt.h"
+//#include "AntTypes/AntBase.h"
+//#include "AntTypes/QueenAnt.h"
+//#include "AntTypes/SoldierAnt.h"
+//#include "AntTypes/WorkerAnt.h"
 
 //--- Includes and Forward Declarations ---
 
@@ -76,9 +76,9 @@ private:
 	void CheckDropFood(AntAgent* pAgent);
 
 	//base ants
-	QueenAnt* m_pQueen{ nullptr };
+	/*QueenAnt* m_pQueen{ nullptr };
 	SoldierAnt* m_pSoldier{ nullptr };
-	WorkerAnt* m_pWorker{ nullptr };
+	WorkerAnt* m_pWorker{ nullptr };*/
 
 
 
