@@ -1,7 +1,7 @@
-# Simulation of an ant colony using steering behaviors, decision making and influence maps.
+# Crowd simulation of an ant colony.
 
 ## Abstract:
-Machine learning and AI enable us to program decision-making for non-player characters (NPCs) in video games. They can also be used to simulate the behavior of real-world animals. In the following research project, I will attempt to simulate the workings of a fire ant colony using a combination of steering behaviors, decision-making, and influence maps.
+Machine learning and AI enable us to program decision-making for non-player characters (NPCs) in video games. They can also be used to simulate the behavior of real-world animals. In the following research project, I will attempt to simulate the workings of a fire ant colony using crowd simulation. I will use a combination of steering behaviors, decision-making, and influence maps to create the simulation model.
 
 ## Introduction:
 Did you know that ants can be found nearly everywhere on earth, except Antarctica and a few inhospitable islands. This fact clearly indicates that ants are adapt at spreading to new places and surviving there. While this phenomenon poses challenges to local ecosystems disrupted by ants, it falls outside the scope of this project.
@@ -89,6 +89,9 @@ Combining these two will result in influence propagation that will take the high
 
 
 ## Creating the project
+
+
+
 ### Creating the ants
 To create the different ants a base class will be used where the other ants will be derived from.
 

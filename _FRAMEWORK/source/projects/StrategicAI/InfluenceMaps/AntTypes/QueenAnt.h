@@ -14,6 +14,7 @@ public:
 	virtual void Update(float deltaTime);
 
 private:
+	void SpawnBrood();
 
 };
 

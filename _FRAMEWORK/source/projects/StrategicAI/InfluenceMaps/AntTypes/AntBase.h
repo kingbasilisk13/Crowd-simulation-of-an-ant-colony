@@ -12,12 +12,21 @@ public:
 
 	virtual void Update(float deltaTime);
 
+	
+
 protected:
 	float m_MaxHealth{1000};
 	float m_CurrentHealth{1000};
 
-	float m_MaxHunger{1000};
-	float m_CurrentHunger{1000};
+	const float m_TimeMaxBetweenHealthReduction{ 10.f };
+	float m_TimeBetweenHealthReduction{};
+
+	float m_MaxEnergy{1000};
+	float m_CurrentEnergy{1000};
+
+	const float m_TimeMaxBetweenEnergyReduction{ 10.f };
+	float m_TimeBetweenEnergyReduction{};
+
 
 	float m_MaxLifeTime{1000};
 	float m_TimeSpend{1000};
