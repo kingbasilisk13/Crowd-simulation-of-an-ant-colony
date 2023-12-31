@@ -1,30 +1,40 @@
 # Crowd simulation of an ant colony.
 
 ## Abstract:
-Machine learning and AI enable us to program decision-making for non-player characters (NPCs) in video games. They can also be used to simulate the behavior of real-world animals. In the following research project, I will attempt to simulate the workings of a fire ant colony using crowd simulation. I will use a combination of steering behaviors, decision-making, and influence maps to create the simulation model.
+Machine learning and AI enable us to program decision-making for non-player characters (NPCs) in video games. They can also be used to simulate the behavior of real-world animals. In the following research project, I will attempt to simulate the workings of an ant colony using crowd simulation. I will use a combination of steering behaviors, decision-making, and influence maps to create the simulation model.
 
 ## Introduction:
-Did you know that ants can be found nearly everywhere on earth, except Antarctica and a few inhospitable islands. This fact clearly indicates that ants are adapt at spreading to new places and surviving there. While this phenomenon poses challenges to local ecosystems disrupted by ants, it falls outside the scope of this project.
+Did you know that ants can be found nearly everywhere on earth, except Antarctica and a few inhospitable islands. This fact clearly indicates that ants are adapt at spreading to new places and surviving there. While this phenomenon poses challenges to the local ecosystems disrupted by the ants, it falls outside the scope of this project.
 The point is that ants display remarkable teamwork. Their nests consist of multiple chambers, each serving their own purpose: A chamber where the queen resides, brood chambers ordered by the age of the brood, and garbage sites for disposing of leftover food and dead ants. These garbage sites are created to prevent the smell from attracting predators and to prevent the growth of mold within the nest. 
-Ants also have the ability to store food. To achieve this, ants make use of their social stomachs to store food. They then use a process called trophallaxis to regurgitate food from one ant to another. They accomplish all of this and more while being nearly blind. Instead of relying on sight and sound to convey meaning to one another, they use specialized pheromones. To indicate where an ant found food, they lay down a pheromone trail. They also use this trail to find their way back home. When an ant dies, they start releasing a pheromone that alerts nearby ants of the dead ant. The colony then collects the body and brings it to the garbage site. There are around 10 to 20 pheromones that ants use, each with its own meaning.
-It is clear that ants are more complex than they appear. This is only a general description, and there are hundreds of ant species, each with its own unique quirks. For example, there are leaf cutter ants that make their nests in trees and Dracula ants that survive by drinking a small amount of blood from their own brood. For this project, I will limit myself to the following behaviors.
-
+Ants also have the ability to store food. To achieve this, ants make use of their social stomachs to store food. They then use a process called trophallaxis to regurgitate food from one ant to another. They accomplish all of this and more while being nearly blind. Instead of relying on sight and sound to convey meaning to one another, they use specialized pheromones. For example: to indicate where an ant found food, they lay down a pheromone trail. They also use this trail to find their way back home. When an ant dies, they start releasing a pheromone that alerts nearby ants of the dead ant. The colony then collects the body and brings it to the garbage site. There are around 10 to 20 pheromones that ants use, each with its own meaning.
+This is only a general description, and there are hundreds of ant species, each with its own unique quirks. For example, there are leaf cutter ants that make their nests in trees and Dracula ants that survive by drinking a small amount of blood from their own brood. For this project, I will limit myself to the following behaviors.
 
 1. Queen: The queen ant is a stationary ant that produces new ants every X seconds. She cannot get food herself and thus will need to be fed by worker ants.
-2. Worker ants: These ants are the most common and do most of the work. They go out and forage for food, collecting it in their social stomach. Upon returning to the colony, they feed the queen and other ants. Worker ants have a limited lifespan and will die. They play a crucial role in keeping the colony clean by moving dead ants to the designated garbage area.
+2. Worker ants: These ants are the most common and do most of the work. They go out and forage for food, collecting it in their social stomach. Upon returning to the colony, they feed the queen and other ants. Worker ants have a limited lifespan and will die. They move dead ants to the garbage site.
 3. Soldier ants: Larger than worker ants, these ants are tasked with protecting the colony. They react to external threats and intruders, defending the colony.
 
-To achieve these behaviors the following components will be used.
-•	Steering behaviors: A way to control how the ants move.
-•	Decision making: A way to device what the ant does depending on its current situation.
-•	Influence map: A substitute for the pheromones. This allows the ant to map out their surroundings without the need for pathfinding.
-
-To achieve these behaviors, the following components will be used:
+To achieve these behaviors, the following components will be used to create a crowd simulation model:
 * Steering behaviors: This provides a way to control how the ants move.
 * Decision making: This allows the ants to decide what actions to take based on their current situation.
 * Influence map: This serves as a substitute for pheromones, enabling the ants to map out their surroundings without the need for pathfinding.
 
 The project will make use of a framework provided by the teachers of gameplay programming at DAE. This framework already contains working code for the previous components, which I will use as a base for the project.
+
+## Crowd Simulation
+Crowd simulation is the process of simulation the movement and/or dynamics of a large number of entities. It is most commonly used to create realistic scenes of large crowds in movies and video games. It can also be used in crisis training, architecture and urban planning, and evacuation simulation. 
+
+In all technicality crowd simulation focuses primarily on simulating human-like entities. So saying that this project uses crowd simulation is incorrect. But the decision making of the ants is more detailed that it could nearly be considerds crowd simulation.
+
+There are several approaches to crowd simulation, each with there own advantages and disadvantages based on the following two factors: crowd size and time scale.
+* Crowd size: this refers to the number of entities in the simulation. There is no exact number to specify if a crowd is large or small.
+* Time scale: this refers to how the objective of the simulation effects the length of the simulation. For example the simulation of how ideologies spread amongst a population will run for a long time as these events can take months or even years.
+
+These 2 factors are used to classify the folowing crowd simulations.
+* Flow-based Approach: a simulation focused on a crowd as a whole. Individuals have no distinct behavior that occurs due to input from their surroundings. Mostly used to simulate the flow of movement. Crowd size: large, Time Scale: short.
+* Entity-based Approach: a simulation that implements a set of physical, predefined, and global laws. The entities do not think for themselves and their movement and actions are determined by the global laws. This model is most often used to research crowd dynamics such as jamming and flocking. Crowd Size: Small to medium, Time Scale: short.
+* Agent-based Approach: Each agent in this simulation has a degree of intelligence. They can each react to each situation on their own based on a set of decision rules. They also use information from there surrounding to decide how to react. This is most often used to simulate realistic crowds. Crowd size and time scale depend entirely on what the researcher is trying to simulate.
+
+This project falls somwhere between entity-based and agent-based approach. All ants will folow a predefined global law but they can also make decisions individualy based upon there suroundings.
 
 ## Components in more detail
 ### Steering behaviors:
@@ -89,6 +99,11 @@ Combining these two will result in influence propagation that will take the high
 
 
 ## Creating the project
+To create the crowd simulation the folowing components are used:
+* Blended steering for movement.
+* Influence map for communication between ants.
+* Behavior tree for decision making.
+
 
 
 
