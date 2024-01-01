@@ -11,7 +11,7 @@
 
 #include "framework/EliteAI/EliteGraphs/EliteGraphAlgorithms/ENavGraphPathfinding.h"
 #include "framework/EliteAI/EliteGraphs/EliteNavGraph/ENavGraph.h"
-#include "Behaviors.h"
+//#include "Behaviors.h"
 
 using namespace Elite;
 
@@ -90,29 +90,29 @@ void App_BT::Start()
 
 	//2. Create BehaviorTree (make more conditions/actions and create a more advanced tree than the simple agents
 	// Curious to see who can fully atomise the tree!
-	BehaviorTree* pBehaviorTree = new BehaviorTree(pBlackboard, 
-		new BehaviorSelector(
-			{
-				new BehaviorSequence(
-					{
-						new BehaviorConditional(BT_Conditions::IsTargetVisible),
-						new BehaviorAction(BT_Actions::Chase)
-						//TODO
-					}),
-				new BehaviorSequence(
-					{
-						new BehaviorConditional(BT_Conditions::ShouldSearch),
-						new BehaviorConditional(BT_Conditions::IsSearchingToLong),
-						new BehaviorAction(BT_Actions::Search)
-						//TODO
-					}),
-				new BehaviorAction(BT_Actions::Patrol)
-			})
-		);
+	//BehaviorTree* pBehaviorTree = new BehaviorTree(pBlackboard, 
+	//	new BehaviorSelector(
+	//		{
+	//			new BehaviorSequence(
+	//				{
+	//					new BehaviorConditional(BT_Conditions::IsTargetVisible),
+	//					new BehaviorAction(BT_Actions::Chase)
+	//					//TODO
+	//				}),
+	//			new BehaviorSequence(
+	//				{
+	//					new BehaviorConditional(BT_Conditions::ShouldSearch),
+	//					new BehaviorConditional(BT_Conditions::IsSearchingToLong),
+	//					new BehaviorAction(BT_Actions::Search)
+	//					//TODO
+	//				}),
+	//			new BehaviorAction(BT_Actions::Patrol)
+	//		})
+	//	);
 
 
 	//3. Set the BehaviorTree active on the agent 
-	m_pGuard->SetDecisionMaking(pBehaviorTree);
+	//m_pGuard->SetDecisionMaking(pBehaviorTree);
 }
 
 void App_BT::Update(float deltaTime)

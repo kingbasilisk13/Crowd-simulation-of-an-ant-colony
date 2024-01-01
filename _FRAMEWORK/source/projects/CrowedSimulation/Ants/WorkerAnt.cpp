@@ -15,3 +15,18 @@ void WorkerAnt::Update(float deltaTime)
 {
 	AntBase::Update(deltaTime);
 }
+
+void WorkerAnt::StoreFoodInSocialStomach(int food)
+{
+	m_SocialStomach += food;
+}
+
+int WorkerAnt::GiveFoodFromSocialStomach()
+{
+	if(m_SocialStomach > 0)
+	{
+		m_SocialStomach -= 1;
+		return 1;
+	}
+	return 0;
+}

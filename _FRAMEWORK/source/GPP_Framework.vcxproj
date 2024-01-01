@@ -218,6 +218,7 @@
     <ClCompile Include="projects\CrowedSimulation\Ants\SoldierAnt.cpp" />
     <ClCompile Include="projects\CrowedSimulation\Ants\WorkerAnt.cpp" />
     <ClCompile Include="projects\CrowedSimulation\App_CrowdSimulation.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\Food\Food.cpp" />
     <ClCompile Include="projects\DecisionMaking\BehaviorTrees\App_BT.cpp" />
     <ClCompile Include="projects\DecisionMaking\FiniteStateMachines\App_FSM.cpp" />
     <ClCompile Include="projects\DecisionMaking\FiniteStateMachines\StatesAndTransitions.cpp" />
@@ -320,6 +321,7 @@
     <ClInclude Include="projects\CrowedSimulation\Ants\SoldierAnt.h" />
     <ClInclude Include="projects\CrowedSimulation\Ants\WorkerAnt.h" />
     <ClInclude Include="projects\CrowedSimulation\App_CrowdSimulation.h" />
+    <ClInclude Include="projects\CrowedSimulation\Food\Food.h" />
     <ClInclude Include="projects\DecisionMaking\BehaviorTrees\App_BT.h" />
     <ClInclude Include="projects\DecisionMaking\BehaviorTrees\Behaviors.h" />
     <ClInclude Include="projects\DecisionMaking\FiniteStateMachines\App_FSM.h" />

@@ -13,8 +13,13 @@ public:
 
 	virtual void Update(float deltaTime);
 
-private:
-	
+	void StoreFoodInSocialStomach(int food);
+	int GiveFoodFromSocialStomach();
 
+private:
+	const int m_MaxSizeSocialStomach{ 200 };
+	int m_SocialStomach{ 0 };
+
+	bool m_HoldingGarbage{ false };
 };
 

@@ -30,5 +30,44 @@ AntBase::~AntBase()
 void AntBase::Update(float deltaTime)
 {
 	SteeringAgent::Update(deltaTime);
+
+	//lower food
+	if (m_CurrentEnergy <= 0)
+	{
+		m_TimeBetweenHealthReduction += deltaTime;
+		if (m_TimeMaxBetweenHealthReduction < m_TimeBetweenHealthReduction)
+		{
+			m_TimeBetweenHealthReduction = 0.f;
+			m_CurrentHealth -= 1.f;
+		}
+	}
+	else
+	{
+		m_TimeBetweenEnergyReduction += deltaTime;
+		if (m_TimeMaxBetweenEnergyReduction < m_TimeBetweenEnergyReduction)
+		{
+			m_TimeBetweenEnergyReduction = 0.f;
+			m_CurrentEnergy -= 1.f;
+		}
+	}
+}
+
+void AntBase::EatFood(float food)
+{
+	m_CurrentEnergy += food;
+
+	if(m_CurrentEnergy > m_MaxEnergy)
+	{
+		m_CurrentEnergy = m_MaxEnergy;
+	}
+}
+
+bool AntBase::IsAntDead() const
+{
+	if(m_CurrentHealth <= 0.f)
+	{
+		return true;
+	}
+	return false;
 }
 

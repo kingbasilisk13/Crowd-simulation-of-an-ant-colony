@@ -12,17 +12,19 @@ public:
 
 	virtual void Update(float deltaTime);
 
-	
+	void EatFood(float food);
+
+	bool IsAntDead() const;
 
 protected:
-	float m_MaxHealth{1000};
-	float m_CurrentHealth{1000};
+	const int m_MaxHealth{1000};
+	int m_CurrentHealth{1000};
 
 	const float m_TimeMaxBetweenHealthReduction{ 10.f };
 	float m_TimeBetweenHealthReduction{};
 
-	float m_MaxEnergy{1000};
-	float m_CurrentEnergy{1000};
+	const int m_MaxEnergy{1000};
+	int m_CurrentEnergy{1000};
 
 	const float m_TimeMaxBetweenEnergyReduction{ 10.f };
 	float m_TimeBetweenEnergyReduction{};
@@ -31,12 +33,9 @@ protected:
 	float m_MaxLifeTime{1000};
 	float m_TimeSpend{1000};
 
+	const float m_InteractionRange{ 3.f };
 
 	Wander* m_pWander{ nullptr };
 	Seek* m_pSeek{ nullptr };
 	BlendedSteering* m_pBlendedSteering{ nullptr };
-
-private:
-	
-
 };

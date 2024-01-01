@@ -3,8 +3,8 @@
 /*=============================================================================*/
 // Behaviors.h: Implementation of certain reusable behaviors for the BT version of the Agario Game
 /*=============================================================================*/
-#ifndef ELITE_APPLICATION_BEHAVIOR_TREE_BEHAVIORS
-#define ELITE_APPLICATION_BEHAVIOR_TREE_BEHAVIORS
+#pragma once
+
 //-----------------------------------------------------------------
 // Includes & Forward Declarations
 //-----------------------------------------------------------------
@@ -21,6 +21,73 @@
 
 namespace BT_Actions 
 {
+	Elite::BehaviorState ReturnTrue(Elite::Blackboard* pBlackboard)
+	{
+		return Elite::BehaviorState::Success;
+	}
+
+	
+
+	Elite::BehaviorState ThisIsASoldier(Elite::Blackboard* pBlackboard)
+	{
+		std::cout << "This is a soldier\n";
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState ThisIsAWorker(Elite::Blackboard* pBlackboard)
+	{
+		std::cout << "This is a worker\n";
+		return Elite::BehaviorState::Success;
+	}
+
+#pragma region WorkerAntActions
+
+#pragma endregion
+
+
+#pragma region SoldierAntActions
+
+#pragma endregion
+
+
+#pragma region QueenAntActions
+	Elite::BehaviorState ThisIsTheQueen(Elite::Blackboard* pBlackboard)
+	{
+		std::cout << "This is the queen\n";
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState SpawnBrood(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* newAnt{};
+
+		//1/4 chanse to spawn soldier. 3/4 chanse for worker.
+		int randomNumber = rand() % 101;
+
+		if (randomNumber < 26)
+		{
+			newAnt = new SoldierAnt();
+		}
+		else
+		{
+			newAnt = new WorkerAnt();
+		}
+
+		AntBase* antQueen{};
+		pBlackboard->GetData("CurrentAnt", antQueen);
+
+		newAnt->SetPosition(antQueen->GetPosition());
+
+		std::vector<AntBase*> ants{};
+		pBlackboard->GetData("Ants", ants);
+
+		ants.push_back(newAnt);
+		pBlackboard->ChangeData("Ants", ants);
+
+		return Elite::BehaviorState::Success;
+	}
+#pragma endregion
+
 	Elite::BehaviorState Chase(Elite::Blackboard* pBlackboard)
 	{
 		SmartAgent* pAgent;
@@ -118,6 +185,58 @@ namespace BT_Actions
 
 namespace BT_Conditions
 {
+	
+
+	
+
+#pragma region WorkerAntConditions
+	bool IsThisAWorkerAnt(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* ant{};
+		pBlackboard->GetData("CurrentAnt", ant);
+
+		if (typeid(WorkerAnt) == typeid(*ant))
+		{
+			return true;
+		}
+		return false;
+	}
+
+#pragma endregion
+
+
+#pragma region SoldierAntConditions
+	bool IsThisASoldierAnt(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* ant{};
+		pBlackboard->GetData("CurrentAnt", ant);
+
+		if (typeid(SoldierAnt) == typeid(*ant))
+		{
+			return true;
+		}
+		return false;
+	}
+#pragma endregion
+
+
+#pragma region QueenAntConditions
+	bool CanQueenSpawnBrood(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* ant{};
+		pBlackboard->GetData("CurrentAnt", ant);
+
+		QueenAnt* queen = dynamic_cast<QueenAnt*>(ant);
+
+		if (queen->SpawnBrood())
+		{
+			return true;
+		}
+		return false;
+	}
+#pragma endregion
+
+
 	bool IsTargetVisible(Elite::Blackboard* pBlackboard)
 	{
 		SmartAgent* pAgent;
@@ -178,5 +297,3 @@ namespace BT_Conditions
 		return true;
 	}
 }
-
-#endif

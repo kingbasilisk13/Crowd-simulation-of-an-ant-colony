@@ -1,8 +1,24 @@
 #include "stdafx.h"
 #include "App_CrowdSimulation.h"
 
+
+#include "projects/DecisionMaking/BehaviorTrees/Behaviors.h"
+
+
+
+using namespace Elite;
 App_CrowdSimulation::~App_CrowdSimulation()
 {
+	for (Food* pFood : m_pFoodVec)
+	{
+		SAFE_DELETE(pFood);
+	}
+
+	for(auto ant: m_Ants)
+	{
+		SAFE_DELETE(ant);
+	}
+	SAFE_DELETE(m_pBehaviorTree);
 }
 
 void App_CrowdSimulation::Start()
@@ -10,10 +26,54 @@ void App_CrowdSimulation::Start()
 	//----------- CAMERA ------------
 	DEBUGRENDERER2D->GetActiveCamera()->SetZoom(200.f);
 	DEBUGRENDERER2D->GetActiveCamera()->SetCenter(Elite::Vector2(200, 200));
+
+	Vector2 centerWorld = { m_WorldSize * 0.5f, m_WorldSize * 0.5f };
+
+	//Spawn food
+	m_pFoodVec.reserve(m_AmountOfFoodItems);
+	for (int idx = 0; idx < m_AmountOfFoodItems; ++idx)
+	{
+		float angle = Elite::randomFloat(float(M_PI) * 2);
+		Vector2 pos = centerWorld + Elite::OrientationToVector(angle) * m_FoodDistance;
+
+		m_pFoodVec.emplace_back(new Food(pos, m_FoodAmount));
+	}
+
+	//create ants
+	for(int i{0}; i < m_StartAmountOfWorkers; ++i)
+	{
+		WorkerAnt* pWorker = new WorkerAnt();
+		pWorker->SetPosition(centerWorld);
+		m_Ants.push_back(pWorker);
+	}
+
+	for (int i{ 0 }; i < m_StartAmountOfSoldiers; ++i)
+	{
+		SoldierAnt* pSoldier = new SoldierAnt();
+		pSoldier->SetPosition(centerWorld);
+		m_Ants.push_back(pSoldier);
+	}
+
+	QueenAnt* pQueen = new QueenAnt();
+	pQueen->SetPosition(centerWorld);
+	m_Ants.push_back(pQueen);
+
+	CreateBlackboard();
+	CreateBehaviorTree();
 }
 
 void App_CrowdSimulation::Update(float deltaTime)
 {
+	m_pBlackboard->GetData("Ants", m_Ants);
+
+	for (const auto& ant : m_Ants)
+	{
+		m_pBlackboard->ChangeData("CurrentAnt", ant);
+
+		m_pBehaviorTree->Update(deltaTime);
+
+		ant->Update(deltaTime);
+	}
 
 	UpdateUI();
 }
@@ -111,4 +171,71 @@ void App_CrowdSimulation::UpdateUI()
 
 void App_CrowdSimulation::Render(float deltaTime) const
 {
+	for (const auto& ant : m_Ants)
+	{
+		ant->Render(deltaTime);
+	}
+
+	for (Food* pFood : m_pFoodVec)
+	{
+		DEBUGRENDERER2D->DrawCircle(pFood->GetPosition(), m_foodRadius, { 0.f, 1.f, 0.f }, DEBUGRENDERER2D->NextDepthSlice());
+
+		pFood->Render(deltaTime);
+	}
+}
+
+void App_CrowdSimulation::CreateBlackboard()
+{
+	m_pBlackboard = new Blackboard();
+
+	m_pBlackboard->AddData("Ants", m_Ants);
+
+	m_pBlackboard->AddData("CurrentAnt", m_Ants[0]);
+
+
+}
+
+void App_CrowdSimulation::CreateBehaviorTree()
+{
+	m_pBehaviorTree = new BehaviorTree(
+		m_pBlackboard,
+		new BehaviorSelector(
+			{
+				CreateWorkerAntSequence(),
+				CreateSoldierAntSequence(),
+				CreateQueenAntSequence()
+			}
+		)
+	);
+}
+
+Elite::BehaviorSequence* App_CrowdSimulation::CreateQueenAntSequence()
+{
+	return new BehaviorSequence(
+		{
+			new BehaviorAction(BT_Actions::ThisIsTheQueen),
+			new BehaviorConditional(BT_Conditions::CanQueenSpawnBrood),
+			new BehaviorAction(BT_Actions::SpawnBrood)
+		}
+	);
+}
+
+Elite::BehaviorSequence* App_CrowdSimulation::CreateSoldierAntSequence()
+{
+	return new BehaviorSequence(
+		{
+			new BehaviorConditional(BT_Conditions::IsThisASoldierAnt),
+			new BehaviorAction(BT_Actions::ThisIsASoldier)
+		}
+	);
+}
+
+Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
+{
+	return new BehaviorSequence(
+		{
+			new BehaviorConditional(BT_Conditions::IsThisAWorkerAnt),
+			new BehaviorAction(BT_Actions::ThisIsAWorker)
+		}
+	);
 }
