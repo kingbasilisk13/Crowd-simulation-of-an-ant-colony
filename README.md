@@ -104,6 +104,7 @@ To create the crowd simulation the folowing components are used:
 * Influence map for communication between ants.
 * Behavior tree for decision making.
 
+Before actually writing the program, here is a short description of how it is going to work. The main class will create a starting number of ants: 1 queen, 20 soldiers, and 50 worker ants. All the ants will be stored in a vector that stores objects of the type AntBase. After that, several influence maps will be created: food map, home map, garbage map, hunger map, and threat map. This information will be added to a blackboard that will contain all the necessary information for the behavior tree: the vector with all the ants, a pointer to the ant that is currently being handled. Using this blackboard, the behavior tree will be created. The tree will have a branch that contains the decisions for the type of ant that is being handled. Finally, during the update function, the program will go through the vector of ants, setting each ant as the handled ant in the blackboard and executing the behavior tree before going to the next ant in the vector. 
 
 
 
