@@ -27,7 +27,7 @@ void QueenAnt::Update(float deltaTime)
 		if (m_TimeMaxBetweenHealthReduction < m_TimeBetweenHealthReduction)
 		{
 			m_TimeBetweenHealthReduction = 0.f;
-			m_CurrentHealth -= 1.f;
+			m_CurrentHealth -= 1;
 		}
 	}
 	else
@@ -36,7 +36,7 @@ void QueenAnt::Update(float deltaTime)
 		if (m_TimeMaxBetweenEnergyReduction < m_TimeBetweenEnergyReduction)
 		{
 			m_TimeBetweenEnergyReduction = 0.f;
-			m_CurrentEnergy -= 1.f;
+			m_CurrentEnergy -= 1;
 		}
 	}
 }

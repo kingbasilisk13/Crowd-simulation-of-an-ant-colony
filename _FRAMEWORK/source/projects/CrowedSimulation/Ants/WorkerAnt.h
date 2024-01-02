@@ -13,8 +13,17 @@ public:
 
 	virtual void Update(float deltaTime);
 
+	//public functions
+	bool IsSocialStomachFull() const;
+
 	void StoreFoodInSocialStomach(int food);
+
 	int GiveFoodFromSocialStomach();
+
+	//getters and setters
+	int GetMaxSizeSocialStomach() const { return m_MaxSizeSocialStomach; };
+
+	int GetSocialStomach() const { return m_SocialStomach; };
 
 private:
 	const int m_MaxSizeSocialStomach{ 200 };

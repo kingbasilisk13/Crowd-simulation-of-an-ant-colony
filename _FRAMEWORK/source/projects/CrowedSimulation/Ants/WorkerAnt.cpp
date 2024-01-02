@@ -16,6 +16,16 @@ void WorkerAnt::Update(float deltaTime)
 	AntBase::Update(deltaTime);
 }
 
+
+bool WorkerAnt::IsSocialStomachFull() const
+{
+	if (m_SocialStomach >= m_MaxSizeSocialStomach)
+	{
+		return true;
+	}
+	return false;
+}
+
 void WorkerAnt::StoreFoodInSocialStomach(int food)
 {
 	m_SocialStomach += food;

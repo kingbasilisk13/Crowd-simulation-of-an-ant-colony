@@ -21,20 +21,22 @@ public:
 	void Render(float deltaTime) const override;
 
 private:
+	bool m_QueenAntIsDead{ false };
+	
 	const int m_StartAmountOfWorkers{ 50 };
 	const int m_StartAmountOfSoldiers{ 20 };
-	const int m_AmountOfFoodItems{ 1 };
+	const int m_AmountOfFoodItems{ 3 };
 	const int m_FoodAmount{ 1000 };
 	const float m_FoodDistance{ 150.f };
 
 	float m_WorldSize = 400.f;
 
 	//Influence maps
-	Elite::InfluenceMap* m_pInfluenceMap_Food{ nullptr };
-	Elite::InfluenceMap* m_pInfluenceMap_Home{ nullptr };
+	Elite::InfluenceMap* m_pInfluenceMapFood{ nullptr };
+	Elite::InfluenceMap* m_pInfluenceMapHome{ nullptr };
 
-	bool m_RenderInfluenceMap_Food{ false };
-	bool m_RenderInfluenceMap_Home{ false };
+	bool m_RenderInfluenceMapFood{ false };
+	bool m_RenderInfluenceMapHome{ false };
 
 	//Food sources
 	std::vector<Food*> m_pFoodVec{};
@@ -44,11 +46,7 @@ private:
 	Elite::Vector2 m_homePosition;
 	float m_homeRadius{ 20.f };
 
-	//Ant Agent(s)
-	//std::vector<AntAgent*> m_pAnts{};
-
-
-
+	
 	//Ant parameters
 	float m_AntSpawnInterval{ 0.5f };
 
@@ -64,7 +62,7 @@ private:
 	void CheckDropFood(AntAgent* pAgent);*/
 
 	//ants
-	std::vector<AntBase*> m_Ants{};
+	std::vector<AntBase*> m_pAnts{};
 
 
 	Elite::Blackboard* m_pBlackboard{ nullptr };
@@ -75,10 +73,10 @@ private:
 	//all functions needed to create the behavior tree
 	void CreateBehaviorTree();
 
-	Elite::BehaviorSequence* CreateQueenAntSequence();
-	Elite::BehaviorSequence* CreateSoldierAntSequence();
 	Elite::BehaviorSequence* CreateWorkerAntSequence();
-
+	Elite::BehaviorSequence* CreateSoldierAntSequence();
+	Elite::BehaviorSequence* CreateQueenAntSequence();
+	
 	//C++ make the class non-copyable
 	App_CrowdSimulation(const App_CrowdSimulation&) = delete;
 	App_CrowdSimulation& operator=(const App_CrowdSimulation&) = delete;

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AntBase.h"
+
 using namespace Elite;
 
 AntBase::AntBase(float radius)
@@ -7,7 +8,7 @@ AntBase::AntBase(float radius)
 {
 	m_pSeek = new Seek();
 	m_pWander = new Wander();
-	m_pBlendedSteering = new BlendedSteering({ { m_pWander , 0.5f}, { m_pSeek, 0.5f } });
+	m_pBlendedSteering = new BlendedSteering({ { m_pWander , 0.1f}, { m_pSeek, 0.9f } });
 	SteeringAgent::SetSteeringBehavior(m_pBlendedSteering);
 
 	SetAutoOrient(true);
@@ -29,8 +30,6 @@ AntBase::~AntBase()
 
 void AntBase::Update(float deltaTime)
 {
-	SteeringAgent::Update(deltaTime);
-
 	//lower food
 	if (m_CurrentEnergy <= 0)
 	{
@@ -38,7 +37,7 @@ void AntBase::Update(float deltaTime)
 		if (m_TimeMaxBetweenHealthReduction < m_TimeBetweenHealthReduction)
 		{
 			m_TimeBetweenHealthReduction = 0.f;
-			m_CurrentHealth -= 1.f;
+			m_CurrentHealth -= 1;
 		}
 	}
 	else
@@ -47,19 +46,28 @@ void AntBase::Update(float deltaTime)
 		if (m_TimeMaxBetweenEnergyReduction < m_TimeBetweenEnergyReduction)
 		{
 			m_TimeBetweenEnergyReduction = 0.f;
-			m_CurrentEnergy -= 1.f;
+			m_CurrentEnergy -= 1;
 		}
 	}
+
+	WriteToInfluenceMap(deltaTime);
+	ReadFromInfluenceMap(deltaTime);
+
+	SteeringAgent::Update(deltaTime);
 }
 
-void AntBase::EatFood(float food)
+void AntBase::EatFood(int food)
 {
 	m_CurrentEnergy += food;
+}
 
-	if(m_CurrentEnergy > m_MaxEnergy)
+bool AntBase::IsStomachFull() const
+{
+	if (m_CurrentEnergy >= m_MaxEnergy)
 	{
-		m_CurrentEnergy = m_MaxEnergy;
+		return true;
 	}
+	return false;
 }
 
 bool AntBase::IsAntDead() const
@@ -71,3 +79,64 @@ bool AntBase::IsAntDead() const
 	return false;
 }
 
+void AntBase::SetWanderAmount(float wanderPct)
+{
+	wanderPct = Clamp(wanderPct, 0.f, 1.f);
+	auto& weightsRef = m_pBlendedSteering->GetWeightedBehaviorsRef();
+	weightsRef[0].weight = wanderPct;
+	weightsRef[1].weight = 1.f - wanderPct;
+}
+
+void AntBase::SetSeekTarget(Elite::Vector2 target)
+{
+	m_pSeek->SetTarget(target);
+}
+
+void AntBase::WriteToInfluenceMap(float deltaTime)
+{
+	if(!m_pWriteInfluenceMap)
+	{
+		return;
+	}
+
+	Vector2 pos = GetPosition();
+	m_pWriteInfluenceMap->SetInfluenceAtPosition(pos, (m_CurrentInfluencePerSecond * deltaTime), true);
+}
+
+void AntBase::ReadFromInfluenceMap(float deltaTime)
+{
+	if (!m_pReadInfluenceMap)
+	{
+		return;
+	}
+
+	Vector2 pos = GetPosition();
+	m_CurrentInfluencePerSecond = m_CurrentInfluencePerSecond - 0.1f;
+
+	if (m_CurrentInfluencePerSecond < 0.1f) m_CurrentInfluencePerSecond = 0.1f;
+
+	float sampleAngleRadiance = m_sampleAngle * (M_PI / 180.f);
+
+	float rotation = GetRotation();
+
+	float bestSample{ 0 };
+
+	Vector2 bestSamplePos = pos;
+
+	for (int i{ -1 }; i < 2; ++i)
+	{
+		Vector2 position = Elite::OrientationToVector(rotation + (sampleAngleRadiance * i));
+
+		position = pos + (position * m_sampleDistance);
+
+		float newSample = m_pReadInfluenceMap->GetInfluenceAtPosition(position);
+
+		if (newSample > bestSample)
+		{
+			bestSample = newSample;
+			bestSamplePos = position;
+		}
+	}
+
+	m_pSeek->SetTarget(bestSamplePos);
+}

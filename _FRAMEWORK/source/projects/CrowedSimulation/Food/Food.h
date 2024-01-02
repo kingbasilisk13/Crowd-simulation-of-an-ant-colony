@@ -8,11 +8,13 @@ public:
 
 	void Render(float dt) const;
 	
-	int GetAmount() const { return m_amount; }
-
+	//public functions
 	int TakeFood();
 	
-	Elite::Vector2 GetPosition() const { return m_position; }
+	//getters and setters
+	Elite::Vector2 GetPosition() const { return m_position; };
+
+	int GetAmount() const { return m_amount; };
 private:
 
 	Elite::Vector2 m_position;

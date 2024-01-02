@@ -21,186 +21,323 @@
 
 namespace BT_Actions 
 {
-	Elite::BehaviorState ReturnTrue(Elite::Blackboard* pBlackboard)
+	Elite::BehaviorState ReturnSuccess(Elite::Blackboard* pBlackboard)
 	{
 		return Elite::BehaviorState::Success;
 	}
-
-	
-
-	Elite::BehaviorState ThisIsASoldier(Elite::Blackboard* pBlackboard)
-	{
-		std::cout << "This is a soldier\n";
-		return Elite::BehaviorState::Success;
-	}
-
-	Elite::BehaviorState ThisIsAWorker(Elite::Blackboard* pBlackboard)
-	{
-		std::cout << "This is a worker\n";
-		return Elite::BehaviorState::Success;
-	}
-
 #pragma region WorkerAntActions
+	Elite::BehaviorState StartScavengingForFood(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* pWorker{};
+		pBlackboard->GetData("CurrentWorker", pWorker);
+
+		pWorker->SetCurrentStatus(Status::Scavenging);
+
+		Elite::InfluenceMap* pFoodMap{};
+		pBlackboard->GetData("FoodMap", pFoodMap);
+		pWorker->SetReadInfluenceMap(pFoodMap);
+
+
+		Elite::InfluenceMap* pHomeMap{};
+		pBlackboard->GetData("HomeMap", pFoodMap);
+		pWorker->SetWriteInfluenceMap(pHomeMap);
+
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState SetFoodInRangeAsTarget(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		std::vector<Food*> pFoodVec{};
+		pBlackboard->GetData("FoodSpots", pFoodVec);
+
+		Elite::Vector2 workerPosition{ worker->GetPosition() };
+		float interactionRange{ worker->GetInteractionRange() };
+
+		for (Food* food : pFoodVec)
+		{
+			float distanceSquared = DistanceSquared(workerPosition, food->GetPosition());
+
+			if (distanceSquared < (interactionRange * interactionRange))
+			{
+				pBlackboard->ChangeData("TargetFoodSpot", food);
+				worker->SetSeekTarget(food->GetPosition());
+				return Elite::BehaviorState::Success;
+			}
+		}
+
+		return Elite::BehaviorState::Failure;
+	}
+
+	Elite::BehaviorState StartCollectingFood(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* pWorker{};
+		pBlackboard->GetData("CurrentWorker", pWorker);
+
+		pWorker->SetCurrentStatus(Status::Collecting);
+
+		Elite::InfluenceMap* pFoodMap{};
+		pBlackboard->GetData("FoodMap", pFoodMap);
+		pWorker->SetWriteInfluenceMap(pFoodMap);
+
+		pWorker->SetReadInfluenceMap(nullptr);
+
+		return Elite::BehaviorState::Success;
+	}
+
+
+	Elite::BehaviorState CollectFood(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* pWorker{};
+		pBlackboard->GetData("CurrentWorker", pWorker);
+
+		Food* pFood{};
+		pBlackboard->GetData("TargetFoodSpot", pFood);
+		
+		pWorker->StoreFoodInSocialStomach(pFood->TakeFood());
+
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState EatFood(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* pWorker{};
+		pBlackboard->GetData("CurrentWorker", pWorker);
+
+		Food* pFood{};
+		pBlackboard->GetData("TargetFoodSpot", pFood);
+
+		pWorker->EatFood(pFood->GetAmount());
+
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState StartGoingHome(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* pWorker{};
+		pBlackboard->GetData("CurrentWorker", pWorker);
+
+		pWorker->SetCurrentStatus(Status::Returning);
+
+		Elite::InfluenceMap* pFoodMap{};
+		pBlackboard->GetData("FoodMap", pFoodMap);
+		pWorker->SetWriteInfluenceMap(pFoodMap);
+
+		Elite::InfluenceMap* pHomeMap{};
+		pBlackboard->GetData("HomeMap", pFoodMap);
+		pWorker->SetReadInfluenceMap(pHomeMap);
+
+		return Elite::BehaviorState::Success;
+	}
 
 #pragma endregion
 
 
 #pragma region SoldierAntActions
+	Elite::BehaviorState ThisIsASoldier(Elite::Blackboard* pBlackboard)
+	{
+		//std::cout << "This is a soldier\n";
+		return Elite::BehaviorState::Success;
+	}
 
 #pragma endregion
 
 
 #pragma region QueenAntActions
-	Elite::BehaviorState ThisIsTheQueen(Elite::Blackboard* pBlackboard)
-	{
-		std::cout << "This is the queen\n";
-		return Elite::BehaviorState::Success;
-	}
-
 	Elite::BehaviorState SpawnBrood(Elite::Blackboard* pBlackboard)
 	{
-		AntBase* newAnt{};
+		AntBase* pNewAnt{};
 
 		//1/4 chanse to spawn soldier. 3/4 chanse for worker.
 		int randomNumber = rand() % 101;
 
 		if (randomNumber < 26)
 		{
-			newAnt = new SoldierAnt();
+			pNewAnt = new SoldierAnt();
 		}
 		else
 		{
-			newAnt = new WorkerAnt();
+			pNewAnt = new WorkerAnt();
 		}
 
-		AntBase* antQueen{};
-		pBlackboard->GetData("CurrentAnt", antQueen);
+		QueenAnt* pAntQueen{};
+		pBlackboard->GetData("Queen", pAntQueen);
 
-		newAnt->SetPosition(antQueen->GetPosition());
+		pNewAnt->SetPosition(pAntQueen->GetPosition());
 
 		std::vector<AntBase*> ants{};
 		pBlackboard->GetData("Ants", ants);
 
-		ants.push_back(newAnt);
+		ants.push_back(pNewAnt);
 		pBlackboard->ChangeData("Ants", ants);
 
 		return Elite::BehaviorState::Success;
 	}
 #pragma endregion
-
-	Elite::BehaviorState Chase(Elite::Blackboard* pBlackboard)
-	{
-		SmartAgent* pAgent;
-		pBlackboard->GetData("Agent", pAgent);
-
-		SteeringAgent* pPlayer;
-		pBlackboard->GetData("TargetAgent", pPlayer);
-
-		assert(pAgent && "Agent was not set in the blackboard.");
-		assert(pPlayer && "Player was not set in the blackboard.");
-
-		Seek* pSeek = pAgent->GetSeekBehavior();
-
-		pSeek->SetTarget(pPlayer->GetPosition());
-
-		pAgent->SetSteeringBehavior(pSeek);
-
-		pBlackboard->ChangeData("ReachedLastKnownLocation", false);
-
-		pBlackboard->ChangeData("PlayersLastKnownLocation", pPlayer->GetPosition());
-
-		pBlackboard->ChangeData("ShouldSearch", true);
-
-		return Elite::BehaviorState::Success;
-	}
-
-
-	Elite::BehaviorState Patrol(Elite::Blackboard* pBlackboard)
-	{
-		SmartAgent* pAgent;
-		std::vector<Elite::Vector2> patrolPath;
-		PathFollow* pPathFollow;
-
-		pBlackboard->GetData("Agent", pAgent);
-		pBlackboard->GetData("PatrolPath", patrolPath);
-		pBlackboard->GetData("PathFollow", pPathFollow);
-
-		assert(pAgent && "Agent was not set in the blackboard.");
-		assert(pPathFollow && "PathFollow was not set in the blackboard.");
-		
-		pAgent->SetSteeringBehavior(pPathFollow);
-		if(pPathFollow->HasArrived())
-		{
-			pPathFollow->SetPath(patrolPath);
-		}
-
-		return Elite::BehaviorState::Success;
-	}
-
-	
-
-	Elite::BehaviorState Search(Elite::Blackboard* pBlackboard)
-	{
-		SmartAgent* pAgent{};
-		pBlackboard->GetData("Agent", pAgent);
-
-		assert(pAgent && "Agent was not set in the blackboard.");
-
-		bool reachedLastLocation{};
-		pBlackboard->GetData("ReachedLastKnownLocation", reachedLastLocation);
-
-		if(!reachedLastLocation)
-		{
-			Elite::Vector2 playerLastPosition{};
-			pBlackboard->GetData("PlayersLastKnownLocation", playerLastPosition);
-
-			float distanceBetweenAgentAndLastPoint = playerLastPosition.Distance(pAgent->GetPosition());
-
-			if (distanceBetweenAgentAndLastPoint <= 0.1f)
-			{
-				pBlackboard->ChangeData("ReachedLastKnownLocation", true);
-
-				std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-				pBlackboard->ChangeData("TimeStartSearching", begin);
-
-				return Elite::BehaviorState::Success;
-			}
-
-			Seek* pSeek = pAgent->GetSeekBehavior();
-
-			pSeek->SetTarget(playerLastPosition);
-
-			pAgent->SetSteeringBehavior(pSeek);
-		}
-		else
-		{
-			Wander* pWander = pAgent->GetWanderBehavior();
-
-			pAgent->SetSteeringBehavior(pWander);
-		}
-
-		return Elite::BehaviorState::Success;
-	}
 }
 
 namespace BT_Conditions
 {
-	
-
-	
+	bool ReturnTrue(Elite::Blackboard* pBlackboard)
+	{
+		return true;
+	}
 
 #pragma region WorkerAntConditions
 	bool IsThisAWorkerAnt(Elite::Blackboard* pBlackboard)
 	{
-		AntBase* ant{};
-		pBlackboard->GetData("CurrentAnt", ant);
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
 
-		if (typeid(WorkerAnt) == typeid(*ant))
+		if (typeid(WorkerAnt) == typeid(*pAnt))
+		{
+			WorkerAnt* pWorker = dynamic_cast<WorkerAnt*>(pAnt);
+			pBlackboard->ChangeData("CurrentWorker", pWorker);
+			return true;
+		}
+		return false;
+	}
+
+	bool IsAntIdle(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		if (worker->GetCurrentStatus() == Status::Idle)
 		{
 			return true;
 		}
 		return false;
 	}
+
+	bool IsAntScavenging(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		if (worker->GetCurrentStatus() == Status::Scavenging)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	bool IsAntCollecting(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		if (worker->GetCurrentStatus() == Status::Collecting)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	bool IsFoodSpotEmpty(Elite::Blackboard* pBlackboard)
+	{
+		Food* pFood{};
+		pBlackboard->GetData("TargetFoodSpot", pFood);
+
+		if (pFood->GetAmount() == 0)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	bool AreBothStomachsFull(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		if (worker->IsSocialStomachFull() && worker->IsStomachFull())
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	bool IsSocialStomachEmpty(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		if(worker->GetSocialStomach() == 0)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	bool IsSocialStomachNotFull(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		if (!worker->IsSocialStomachFull())
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	bool IsStomachEmpty(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		if (worker->GetCurrentEnergy() == 0)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	bool IsStomachNotFull(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		if (!worker->IsStomachFull())
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	bool IsAntNearFood(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		std::vector<Food*> pFoodVec{};
+		pBlackboard->GetData("FoodSpots", pFoodVec);
+
+		Elite::Vector2 workerPosition{ worker->GetPosition() };
+		float interactionRange{ worker->GetInteractionRange()};
+
+		for(const Food* food : pFoodVec)
+		{
+			float distanceSquared = DistanceSquared(workerPosition, food->GetPosition());
+
+			if(distanceSquared < (interactionRange * interactionRange))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	
 
 #pragma endregion
 
@@ -208,11 +345,13 @@ namespace BT_Conditions
 #pragma region SoldierAntConditions
 	bool IsThisASoldierAnt(Elite::Blackboard* pBlackboard)
 	{
-		AntBase* ant{};
-		pBlackboard->GetData("CurrentAnt", ant);
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
 
-		if (typeid(SoldierAnt) == typeid(*ant))
+		if (typeid(SoldierAnt) == typeid(*pAnt))
 		{
+			SoldierAnt* pSoldier = dynamic_cast<SoldierAnt*>(pAnt);
+			pBlackboard->ChangeData("CurrentSoldier", pSoldier);
 			return true;
 		}
 		return false;
@@ -223,77 +362,14 @@ namespace BT_Conditions
 #pragma region QueenAntConditions
 	bool CanQueenSpawnBrood(Elite::Blackboard* pBlackboard)
 	{
-		AntBase* ant{};
-		pBlackboard->GetData("CurrentAnt", ant);
+		QueenAnt* pQueen{};
+		pBlackboard->GetData("Queen", pQueen);
 
-		QueenAnt* queen = dynamic_cast<QueenAnt*>(ant);
-
-		if (queen->SpawnBrood())
+		if (pQueen->SpawnBrood())
 		{
 			return true;
 		}
 		return false;
 	}
 #pragma endregion
-
-
-	bool IsTargetVisible(Elite::Blackboard* pBlackboard)
-	{
-		SmartAgent* pAgent;
-		pBlackboard->GetData("Agent", pAgent);
-
-		SteeringAgent* pPlayer;
-		pBlackboard->GetData("TargetAgent", pPlayer);
-
-		float detectionRadius;
-		pBlackboard->GetData("DetectRadius", detectionRadius);
-		
-		assert(pAgent && "Agent was not set in blackboard");
-		assert(pPlayer && "Player was not set in blackboard");
-		assert(detectionRadius && "DetectionRadius was not set in blackboard");
-
-		bool isInDetectionRadius = Elite::DistanceSquared(pAgent->GetPosition(), pPlayer->GetPosition()) < (detectionRadius * detectionRadius);
-		bool isInLightOfSight = pAgent->HasLineOfSight(pPlayer->GetPosition());
-
-		return isInDetectionRadius && isInLightOfSight;
-	}
-
-
-
-	bool ShouldSearch(Elite::Blackboard* pBlackboard)
-	{
-		bool didAgentSpotTargetRecently{};
-		pBlackboard->GetData("ShouldSearch", didAgentSpotTargetRecently);
-		return didAgentSpotTargetRecently;
-	}
-
-
-
-	bool IsSearchingToLong(Elite::Blackboard* pBlackboard)
-	{
-		bool reachedLastLocation{};
-		pBlackboard->GetData("ReachedLastKnownLocation", reachedLastLocation);
-
-		float maxSearchTime{ 0 };
-		pBlackboard->GetData("MaxSearchTime", maxSearchTime);
-
-		if(reachedLastLocation)
-		{
-			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-			std::chrono::steady_clock::time_point begin{};
-			pBlackboard->GetData("TimeStartSearching", begin);
-
-			if(std::chrono::duration_cast<std::chrono::seconds>(end - begin).count() > maxSearchTime)
-			{
-				pBlackboard->ChangeData("ReachedLastKnownLocation", false);
-				pBlackboard->ChangeData("ShouldSearch", false);
-
-				std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-				pBlackboard->ChangeData("TimeStartSearching", begin);
-
-				return false;
-			}
-		}
-		return true;
-	}
 }

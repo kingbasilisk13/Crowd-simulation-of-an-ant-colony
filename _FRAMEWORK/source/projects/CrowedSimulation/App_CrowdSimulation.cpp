@@ -14,11 +14,13 @@ App_CrowdSimulation::~App_CrowdSimulation()
 		SAFE_DELETE(pFood);
 	}
 
-	for(auto ant: m_Ants)
+	for(auto ant: m_pAnts)
 	{
 		SAFE_DELETE(ant);
 	}
 	SAFE_DELETE(m_pBehaviorTree);
+	SAFE_DELETE(m_pInfluenceMapFood);
+	SAFE_DELETE(m_pInfluenceMapHome);
 }
 
 void App_CrowdSimulation::Start()
@@ -29,12 +31,22 @@ void App_CrowdSimulation::Start()
 
 	Vector2 centerWorld = { m_WorldSize * 0.5f, m_WorldSize * 0.5f };
 
+	//influence maps
+	m_pInfluenceMapFood = new InfluenceMap(50, 50, 8);
+	m_pInfluenceMapFood->SetDecay(0.1f);
+	m_pInfluenceMapFood->SetMomentum(0.99f);
+
+	m_pInfluenceMapHome = new InfluenceMap(50, 50, 8);
+	m_pInfluenceMapHome->SetDecay(0.1f);
+	m_pInfluenceMapHome->SetMomentum(0.99f);
+
 	//Spawn food
 	m_pFoodVec.reserve(m_AmountOfFoodItems);
 	for (int idx = 0; idx < m_AmountOfFoodItems; ++idx)
 	{
 		float angle = Elite::randomFloat(float(M_PI) * 2);
 		Vector2 pos = centerWorld + Elite::OrientationToVector(angle) * m_FoodDistance;
+		//Vector2 pos = centerWorld + Elite::OrientationToVector(angle) * 10.f;
 
 		m_pFoodVec.emplace_back(new Food(pos, m_FoodAmount));
 	}
@@ -44,19 +56,19 @@ void App_CrowdSimulation::Start()
 	{
 		WorkerAnt* pWorker = new WorkerAnt();
 		pWorker->SetPosition(centerWorld);
-		m_Ants.push_back(pWorker);
+		m_pAnts.push_back(pWorker);
 	}
 
 	for (int i{ 0 }; i < m_StartAmountOfSoldiers; ++i)
 	{
 		SoldierAnt* pSoldier = new SoldierAnt();
 		pSoldier->SetPosition(centerWorld);
-		m_Ants.push_back(pSoldier);
+		m_pAnts.push_back(pSoldier);
 	}
 
 	QueenAnt* pQueen = new QueenAnt();
 	pQueen->SetPosition(centerWorld);
-	m_Ants.push_back(pQueen);
+	m_pAnts.push_back(pQueen);
 
 	CreateBlackboard();
 	CreateBehaviorTree();
@@ -64,114 +76,155 @@ void App_CrowdSimulation::Start()
 
 void App_CrowdSimulation::Update(float deltaTime)
 {
-	m_pBlackboard->GetData("Ants", m_Ants);
-
-	for (const auto& ant : m_Ants)
+	//stop the simulation the moment the queen is dead.
+	if(!m_QueenAntIsDead)
 	{
-		m_pBlackboard->ChangeData("CurrentAnt", ant);
+		m_pInfluenceMapFood->Update(deltaTime);
+		m_pInfluenceMapHome->Update(deltaTime);
 
-		m_pBehaviorTree->Update(deltaTime);
+		m_pBlackboard->GetData("Ants", m_pAnts);
 
-		ant->Update(deltaTime);
+		//the first loop is used to update the behavior of the ants
+		for (const auto& ant : m_pAnts)
+		{
+			m_pBlackboard->ChangeData("CurrentAnt", ant);
+
+			m_pBehaviorTree->Update(deltaTime);
+		}
+
+		//the second loop makes the ants act upon the set behavior.
+		for (const auto& ant : m_pAnts)
+		{
+			ant->Update(deltaTime);
+		}
+
+		QueenAnt* pQueen{};
+		m_pBlackboard->GetData("Queen", pQueen);
+		if (pQueen)
+		{
+			if (pQueen->IsAntDead())
+			{
+				m_QueenAntIsDead = true;
+			}
+		}
 	}
-
+	
 	UpdateUI();
 }
 
 void App_CrowdSimulation::UpdateUI()
 {
-	//Setup
-	int menuWidth = 200;
-	int const width = DEBUGRENDERER2D->GetActiveCamera()->GetWidth();
-	int const height = DEBUGRENDERER2D->GetActiveCamera()->GetHeight();
-	bool windowActive = true;
-	ImGui::SetNextWindowPos(ImVec2((float)width - menuWidth - 10, 10));
-	ImGui::SetNextWindowSize(ImVec2((float)menuWidth, (float)height - 90));
-	ImGui::Begin("Gameplay Programming", &windowActive, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-	ImGui::PushAllowKeyboardFocus(false);
-	ImGui::SetWindowFocus();
-	ImGui::PushItemWidth(70);
-	//Elements
-	ImGui::Text("CONTROLS");
-	ImGui::Indent();
-	ImGui::Unindent();
-
-	ImGui::Spacing();
-	ImGui::Separator();
-	ImGui::Spacing();
-	ImGui::Spacing();
-
-	ImGui::Text("STATS");
-	ImGui::Indent();
-	ImGui::Text("%.3f ms/frame", 1000.0f / ImGui::GetIO().Framerate);
-	ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
-	ImGui::Unindent();
-
-	ImGui::Spacing();
-	ImGui::Separator();
-	ImGui::Spacing();
-	ImGui::Spacing();
-
-	ImGui::Text("Home");
-	ImGui::Spacing();
-	ImGui::Spacing();
-	ImGui::SliderFloat("Home Radius", &m_homeRadius, 0.0f, 40.f, "%.2");
-
-	ImGui::Text("Food");
-	ImGui::Spacing();
-	ImGui::Spacing();
-	ImGui::SliderFloat("Food Radius", &m_foodRadius, 0.0f, 40.f, "%.2");
-
-	ImGui::Text("Influence Maps");
-	ImGui::Spacing();
-	ImGui::Spacing();
-
-	ImGui::Checkbox("Show Food Influence map ", &m_RenderInfluenceMap_Food);
-	ImGui::Checkbox("Show Home Influence map ", &m_RenderInfluenceMap_Home);
-
-	/*auto momentum = m_pInfluenceMap_Food->GetMomentum();
-	auto decay = m_pInfluenceMap_Food->GetDecay();
-	auto propagationInterval = m_pInfluenceMap_Food->GetPropagationInterval();*/
-
-	/*ImGui::SliderFloat("Momentum", &momentum, 0.0f, 1.f, "%.2");
-	ImGui::SliderFloat("Decay", &decay, 0.f, 1.f, "%.2");
-	ImGui::SliderFloat("Propagation Interval", &propagationInterval, 0.f, 2.f, "%.2");*/
-	ImGui::Spacing();
-
-	//Set data
-	/*m_pInfluenceMap_Food->SetMomentum(momentum);
-	m_pInfluenceMap_Food->SetDecay(decay);
-	m_pInfluenceMap_Food->SetPropagationInterval(propagationInterval);
-	m_pInfluenceMap_Home->SetMomentum(momentum);
-	m_pInfluenceMap_Home->SetDecay(decay);
-	m_pInfluenceMap_Home->SetPropagationInterval(propagationInterval);*/
-
-	//Ant Parameters
-	ImGui::Text("Ants");
-	ImGui::Spacing();
-	ImGui::Spacing();
-	ImGui::SliderFloat("Influence Per Second", &m_InfluencePerSecond, 0.0f, 100.f, "%.2");
-	ImGui::SliderFloat("Wander Pct", &m_AntWanderPct, 0.0f, 1.f, "%.2");
-	ImGui::SliderFloat("Sample Distance", &m_AntSampleDist, 1.f, 20.f, "%.2");
-	ImGui::SliderFloat("Sample Angle", &m_AntSampleAngle, 0.f, 180.f, "%.2");
-	ImGui::Checkbox("Render debug", &m_RenderAntDebug);
-
-	/*for (AntAgent* const ant : m_pAnts)
+	if(m_QueenAntIsDead)
 	{
-		ant->SetInfluencePerSecond(m_InfluencePerSecond);
-		ant->SetWanderAmount(m_AntWanderPct);
-		ant->SetSampleDistance(m_AntSampleDist);
-		ant->SetSampleAngle(m_AntSampleAngle);
-	}*/
+		//Setup
+		int menuWidth = 200;
+		int menuHeight = 200;
+		int const width = DEBUGRENDERER2D->GetActiveCamera()->GetWidth();
+		int const height = DEBUGRENDERER2D->GetActiveCamera()->GetHeight();
+		bool windowActive = true;
+		ImGui::SetNextWindowPos(ImVec2((width * 0.5f) - (menuWidth * 0.5f), (height * 0.5f) - (menuHeight * 0.5f)));
+		ImGui::SetNextWindowSize(ImVec2((float)menuWidth, (float)menuHeight));
+		ImGui::Begin("The queen ant has died.", &windowActive, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
-	//End
-	ImGui::PopAllowKeyboardFocus();
-	ImGui::End();
+		
+		//End
+		ImGui::End();
+	}
+	else
+	{
+		//Setup
+		int menuWidth = 200;
+		int const width = DEBUGRENDERER2D->GetActiveCamera()->GetWidth();
+		int const height = DEBUGRENDERER2D->GetActiveCamera()->GetHeight();
+		bool windowActive = true;
+		ImGui::SetNextWindowPos(ImVec2((float)width - menuWidth - 10, 10));
+		ImGui::SetNextWindowSize(ImVec2((float)menuWidth, (float)height - 90));
+		ImGui::Begin("Gameplay Programming", &windowActive, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+		ImGui::PushAllowKeyboardFocus(false);
+		ImGui::SetWindowFocus();
+		ImGui::PushItemWidth(70);
+		//Elements
+		ImGui::Text("CONTROLS");
+		ImGui::Indent();
+		ImGui::Unindent();
+
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::Spacing();
+		ImGui::Spacing();
+
+		ImGui::Text("STATS");
+		ImGui::Indent();
+		ImGui::Text("%.3f ms/frame", 1000.0f / ImGui::GetIO().Framerate);
+		ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+		ImGui::Unindent();
+
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::Spacing();
+		ImGui::Spacing();
+
+		ImGui::Text("Home");
+		ImGui::Spacing();
+		ImGui::Spacing();
+		ImGui::SliderFloat("Home Radius", &m_homeRadius, 0.0f, 40.f, "%.2");
+
+		ImGui::Text("Food");
+		ImGui::Spacing();
+		ImGui::Spacing();
+		ImGui::SliderFloat("Food Radius", &m_foodRadius, 0.0f, 40.f, "%.2");
+
+		ImGui::Text("Influence Maps");
+		ImGui::Spacing();
+		ImGui::Spacing();
+
+		ImGui::Checkbox("Show Food Influence map ", &m_RenderInfluenceMapFood);
+		ImGui::Checkbox("Show Home Influence map ", &m_RenderInfluenceMapHome);
+
+		auto momentum = m_pInfluenceMapFood->GetMomentum();
+		auto decay = m_pInfluenceMapFood->GetDecay();
+		auto propagationInterval = m_pInfluenceMapFood->GetPropagationInterval();
+
+		ImGui::SliderFloat("Momentum", &momentum, 0.0f, 1.f, "%.2");
+		ImGui::SliderFloat("Decay", &decay, 0.f, 1.f, "%.2");
+		ImGui::SliderFloat("Propagation Interval", &propagationInterval, 0.f, 2.f, "%.2");
+		ImGui::Spacing();
+
+		//Set data
+		m_pInfluenceMapFood->SetMomentum(momentum);
+		m_pInfluenceMapFood->SetDecay(decay);
+		m_pInfluenceMapFood->SetPropagationInterval(propagationInterval);
+		m_pInfluenceMapHome->SetMomentum(momentum);
+		m_pInfluenceMapHome->SetDecay(decay);
+		m_pInfluenceMapHome->SetPropagationInterval(propagationInterval);
+
+		//Ant Parameters
+		ImGui::Text("Ants");
+		ImGui::Spacing();
+		ImGui::Spacing();
+		ImGui::SliderFloat("Influence Per Second", &m_InfluencePerSecond, 0.0f, 100.f, "%.2");
+		ImGui::SliderFloat("Wander Pct", &m_AntWanderPct, 0.0f, 1.f, "%.2");
+		ImGui::SliderFloat("Sample Distance", &m_AntSampleDist, 1.f, 20.f, "%.2");
+		ImGui::SliderFloat("Sample Angle", &m_AntSampleAngle, 0.f, 180.f, "%.2");
+		ImGui::Checkbox("Render debug", &m_RenderAntDebug);
+
+		for (const auto& ant : m_pAnts)
+		{
+			ant->SetInfluencePerSecond(m_InfluencePerSecond);
+			ant->SetWanderAmount(m_AntWanderPct);
+			ant->SetSampleDistance(m_AntSampleDist);
+			ant->SetSampleAngle(m_AntSampleAngle);
+		}
+
+		//End
+		ImGui::PopAllowKeyboardFocus();
+		ImGui::End();
+	}
 }
 
 void App_CrowdSimulation::Render(float deltaTime) const
 {
-	for (const auto& ant : m_Ants)
+	for (const auto& ant : m_pAnts)
 	{
 		ant->Render(deltaTime);
 	}
@@ -182,17 +235,45 @@ void App_CrowdSimulation::Render(float deltaTime) const
 
 		pFood->Render(deltaTime);
 	}
+
+	if (m_RenderInfluenceMapFood)
+		m_pInfluenceMapFood->Render();
+	else if (m_RenderInfluenceMapHome)
+		m_pInfluenceMapHome->Render();
 }
 
 void App_CrowdSimulation::CreateBlackboard()
 {
 	m_pBlackboard = new Blackboard();
 
-	m_pBlackboard->AddData("Ants", m_Ants);
+	//ants data
+	m_pBlackboard->AddData("Ants", m_pAnts);
+	
+	m_pBlackboard->AddData("CurrentAnt", m_pAnts[0]);
 
-	m_pBlackboard->AddData("CurrentAnt", m_Ants[0]);
+	WorkerAnt* worker{};
+	m_pBlackboard->AddData("CurrentWorker", worker);
+	SoldierAnt* soldier{};
+	m_pBlackboard->AddData("CurrentSoldier", soldier);
 
+	for (const auto& ant : m_pAnts)
+	{
+		if (typeid(QueenAnt) == typeid(*ant))
+		{
+			QueenAnt* queen = dynamic_cast<QueenAnt*>(ant);
+			m_pBlackboard->AddData("Queen", queen);
+			break;
+		}
+	}
 
+	//food
+	m_pBlackboard->AddData("FoodSpots", m_pFoodVec);
+
+	Food* pFood{};
+	m_pBlackboard->AddData("TargetFoodSpot", pFood);
+	
+	m_pBlackboard->AddData("FoodMap", m_pInfluenceMapFood);
+	m_pBlackboard->AddData("HomeMap", m_pInfluenceMapHome);
 }
 
 void App_CrowdSimulation::CreateBehaviorTree()
@@ -209,13 +290,84 @@ void App_CrowdSimulation::CreateBehaviorTree()
 	);
 }
 
-Elite::BehaviorSequence* App_CrowdSimulation::CreateQueenAntSequence()
+Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 {
 	return new BehaviorSequence(
 		{
-			new BehaviorAction(BT_Actions::ThisIsTheQueen),
-			new BehaviorConditional(BT_Conditions::CanQueenSpawnBrood),
-			new BehaviorAction(BT_Actions::SpawnBrood)
+			new BehaviorConditional(BT_Conditions::IsThisAWorkerAnt),
+			new BehaviorSelector(
+				{
+					new BehaviorSequence(
+						{
+							new BehaviorConditional(BT_Conditions::IsAntIdle),
+							new BehaviorSelector(
+								{
+									new BehaviorSequence(
+										{
+											new BehaviorConditional(BT_Conditions::IsSocialStomachEmpty),
+											new BehaviorAction(BT_Actions::StartScavengingForFood)
+										}
+									)
+								}
+							)
+						}
+					),
+					new BehaviorSequence(
+						{
+							new BehaviorConditional(BT_Conditions::IsAntScavenging),
+							new BehaviorSelector(
+								{
+									new BehaviorSequence(
+										{
+											new BehaviorConditional(BT_Conditions::IsAntNearFood),
+											new BehaviorAction(BT_Actions::SetFoodInRangeAsTarget),
+											new BehaviorAction(BT_Actions::StartCollectingFood)
+										}
+									),
+									new BehaviorConditional(BT_Conditions::ReturnTrue)
+								}
+							)
+						}
+					),
+					new BehaviorSequence(
+						{
+							new BehaviorConditional(BT_Conditions::IsAntCollecting),
+							new BehaviorAction(BT_Actions::SetFoodInRangeAsTarget),
+							new BehaviorSelector(
+								{
+									new BehaviorSequence(
+										{
+											new BehaviorSelector(
+												{
+													new BehaviorConditional(BT_Conditions::IsFoodSpotEmpty),
+													new BehaviorConditional(BT_Conditions::AreBothStomachsFull)
+												}
+											),
+											new BehaviorAction(BT_Actions::StartGoingHome)
+										}
+									),
+									new BehaviorSelector(
+										{
+											new BehaviorSequence(
+												{
+													new BehaviorConditional(BT_Conditions::IsSocialStomachNotFull),
+													new BehaviorAction(BT_Actions::CollectFood)
+												}
+											),
+											new BehaviorSequence(
+												{
+													new BehaviorConditional(BT_Conditions::IsStomachNotFull),
+													new BehaviorAction(BT_Actions::EatFood)
+												}
+											)
+										}
+									)
+								}
+							)
+						}
+					)
+				}
+			)
 		}
 	);
 }
@@ -230,12 +382,12 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateSoldierAntSequence()
 	);
 }
 
-Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
+Elite::BehaviorSequence* App_CrowdSimulation::CreateQueenAntSequence()
 {
 	return new BehaviorSequence(
 		{
-			new BehaviorConditional(BT_Conditions::IsThisAWorkerAnt),
-			new BehaviorAction(BT_Actions::ThisIsAWorker)
+			new BehaviorConditional(BT_Conditions::CanQueenSpawnBrood),
+			new BehaviorAction(BT_Actions::SpawnBrood)
 		}
 	);
 }
