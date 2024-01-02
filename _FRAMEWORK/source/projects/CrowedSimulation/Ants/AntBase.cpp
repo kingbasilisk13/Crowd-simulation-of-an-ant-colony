@@ -56,6 +56,12 @@ void AntBase::Update(float deltaTime)
 	SteeringAgent::Update(deltaTime);
 }
 
+void AntBase::Render(float dt)
+{
+	SteeringAgent::Render(dt);
+	DEBUGRENDERER2D->DrawCircle(SteeringAgent::GetPosition(), m_InteractionRange, { 1.f, 0.f, 0.f }, 0.5f);
+}
+
 void AntBase::EatFood(int food)
 {
 	m_CurrentEnergy += food;

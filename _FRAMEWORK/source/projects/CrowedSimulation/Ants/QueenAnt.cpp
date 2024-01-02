@@ -12,6 +12,8 @@ QueenAnt::QueenAnt()
 	SetBodyColor(Color{ 153.f/255.f, 0.f, 0.f });
 
 	m_LastTimePoinSpawnBrood = std::chrono::steady_clock::now();
+
+	m_CurrentEnergy = 400;
 }
 
 QueenAnt::~QueenAnt()
@@ -39,6 +41,9 @@ void QueenAnt::Update(float deltaTime)
 			m_CurrentEnergy -= 1;
 		}
 	}
+
+	WriteToInfluenceMap(deltaTime);
+	ReadFromInfluenceMap(deltaTime);
 }
 
 bool QueenAnt::SpawnBrood()

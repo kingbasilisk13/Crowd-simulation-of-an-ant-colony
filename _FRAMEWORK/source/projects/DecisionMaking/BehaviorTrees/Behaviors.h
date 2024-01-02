@@ -25,6 +25,58 @@ namespace BT_Actions
 	{
 		return Elite::BehaviorState::Success;
 	}
+
+	Elite::BehaviorState SetHungerMapAsWriteMap(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		Elite::InfluenceMap* pHungerMap{};
+		pBlackboard->GetData("HungerMap", pHungerMap);
+		pAnt->SetWriteInfluenceMap(pHungerMap);
+
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState SetHungerMapAsReadMap(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		Elite::InfluenceMap* pHungerMap{};
+		pBlackboard->GetData("HungerMap", pHungerMap);
+		pAnt->SetReadInfluenceMap(pHungerMap);
+
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState SetHomeMapAsWriteMap(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		Elite::InfluenceMap* pHomeMap{};
+		pBlackboard->GetData("HomeMap", pHomeMap);
+		pAnt->SetWriteInfluenceMap(pHomeMap);
+
+
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState SetHomeMapAsReadMap(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		Elite::InfluenceMap* pHomeMap{};
+		pBlackboard->GetData("HomeMap", pHomeMap);
+		pAnt->SetReadInfluenceMap(pHomeMap);
+
+
+		return Elite::BehaviorState::Success;
+	}
+
+
 #pragma region WorkerAntActions
 	Elite::BehaviorState StartScavengingForFood(Elite::Blackboard* pBlackboard)
 	{
@@ -39,7 +91,7 @@ namespace BT_Actions
 
 
 		Elite::InfluenceMap* pHomeMap{};
-		pBlackboard->GetData("HomeMap", pFoodMap);
+		pBlackboard->GetData("HomeMap", pHomeMap);
 		pWorker->SetWriteInfluenceMap(pHomeMap);
 
 		return Elite::BehaviorState::Success;
@@ -121,17 +173,31 @@ namespace BT_Actions
 
 		pWorker->SetCurrentStatus(Status::Returning);
 
-		Elite::InfluenceMap* pFoodMap{};
-		pBlackboard->GetData("FoodMap", pFoodMap);
-		pWorker->SetWriteInfluenceMap(pFoodMap);
+		/*Elite::InfluenceMap* pFoodMap{};
+		pBlackboard->GetData("FoodMap", pFoodMap);*/
+		pWorker->SetWriteInfluenceMap(nullptr);
 
 		Elite::InfluenceMap* pHomeMap{};
-		pBlackboard->GetData("HomeMap", pFoodMap);
+		pBlackboard->GetData("HomeMap", pHomeMap);
 		pWorker->SetReadInfluenceMap(pHomeMap);
 
 		return Elite::BehaviorState::Success;
 	}
 
+	Elite::BehaviorState FeedStarvingAnt(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* pWorker{};
+		pBlackboard->GetData("CurrentWorker", pWorker);
+		pWorker->SetCurrentStatus(Status::Feeding);
+
+		AntBase* pStarvingAnt{};
+		pBlackboard->GetData("TargetStarvingAnt", pStarvingAnt);
+		pStarvingAnt->SetCurrentStatus(Status::Eating);
+
+		pStarvingAnt->EatFood(pWorker->GiveFoodFromSocialStomach());
+
+		return Elite::BehaviorState::Success;
+	}
 #pragma endregion
 
 
@@ -175,6 +241,8 @@ namespace BT_Actions
 
 		return Elite::BehaviorState::Success;
 	}
+
+	
 #pragma endregion
 }
 
@@ -183,6 +251,23 @@ namespace BT_Conditions
 	bool ReturnTrue(Elite::Blackboard* pBlackboard)
 	{
 		return true;
+	}
+
+	bool IsAntStarving(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+		float current = pAnt->GetCurrentEnergy();
+		float max = pAnt->GetMaxEnergy();
+
+		float energyPercentage{ (current / max) * 100.f };
+
+		if(energyPercentage <= 50.f)
+		{
+			pAnt->SetCurrentStatus(Status::Starving);
+			return true;
+		}
+		return false;
 	}
 
 #pragma region WorkerAntConditions
@@ -275,17 +360,43 @@ namespace BT_Conditions
 		return false;
 	}
 
-	bool IsSocialStomachNotFull(Elite::Blackboard* pBlackboard)
+	bool IsSocialStomachNotEmpty(Elite::Blackboard* pBlackboard)
 	{
 		WorkerAnt* worker{};
 		pBlackboard->GetData("CurrentWorker", worker);
 
-		if (!worker->IsSocialStomachFull())
+		if (worker->GetSocialStomach() == 0)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	bool IsSocialStomachFull(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		if (worker->IsSocialStomachFull())
 		{
 			return true;
 		}
 
 		return false;
+	}
+
+	bool IsSocialStomachNotFull(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		if (worker->IsSocialStomachFull())
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	bool IsStomachEmpty(Elite::Blackboard* pBlackboard)
@@ -332,6 +443,33 @@ namespace BT_Conditions
 			if(distanceSquared < (interactionRange * interactionRange))
 			{
 				return true;
+			}
+		}
+		return false;
+	}
+
+	bool IsStarvingAntInRange(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		std::vector<AntBase*> m_pAnts{};
+		pBlackboard->GetData("Ants", m_pAnts);
+
+		Elite::Vector2 workerPosition{ worker->GetPosition() };
+		float interactionRange{ worker->GetInteractionRange() };
+
+		for (AntBase* ant : m_pAnts)
+		{
+			float distanceSquared = DistanceSquared(workerPosition, ant->GetPosition());
+
+			if (distanceSquared < (interactionRange * interactionRange))
+			{
+				if(ant->GetCurrentStatus() == Status::Starving)
+				{
+					pBlackboard->ChangeData("TargetStarvingAnt", ant);
+					return true;
+				}
 			}
 		}
 		return false;

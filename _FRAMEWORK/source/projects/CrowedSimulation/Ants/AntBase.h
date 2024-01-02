@@ -4,6 +4,8 @@
 #include "projects/Movement/SteeringBehaviors/CombinedSteering/CombinedSteeringBehaviors.h"
 #include "framework/EliteAI/EliteGraphs/EliteInfluenceMap/EInfluenceMap.h"
 
+//todo: should i keep this or is this basicly making a finite state machine out of a behavior tree?
+
 enum class Status
 {
 	Idle,
@@ -26,6 +28,7 @@ public:
 	virtual ~AntBase();
 
 	virtual void Update(float deltaTime);
+	void Render(float dt);
 
 	//public functions
 	void EatFood(int food);
@@ -43,11 +46,12 @@ public:
 	void SetCurrentStatus(Status status) { m_CurrentStatus = status; };
 
 	int GetCurrentEnergy() const { return m_CurrentEnergy; };
+	int GetMaxEnergy() const { return m_MaxEnergy; };
 
 	float GetInteractionRange() const { return m_InteractionRange; };
 
 	float GetInfluencePerSecond() const { return m_CurrentInfluencePerSecond; }
-	void SetInfluencePerSecond(float influence) { m_MaxInfluencePerSecond = influence; }
+	void SetInfluencePerSecond(float influence) { m_CurrentInfluencePerSecond = influence; }
 
 	float GetSampleDistance() const { return m_sampleDistance; }
 	void SetSampleDistance(float sampleDistance) { m_sampleDistance = sampleDistance; }
@@ -68,7 +72,7 @@ protected:
 	const float m_TimeMaxBetweenHealthReduction{ 10.f };
 	float m_TimeBetweenHealthReduction{};
 
-	const int m_MaxEnergy{1000};
+	int m_MaxEnergy{1000};
 	int m_CurrentEnergy{1000};
 
 	const float m_TimeMaxBetweenEnergyReduction{ 10.f };
@@ -77,7 +81,7 @@ protected:
 	float m_MaxLifeTime{1000};
 	float m_TimeSpend{1000};
 
-	const float m_InteractionRange{ 100.f };
+	const float m_InteractionRange{ 10.f };
 	
 	//movement
 	Wander* m_pWander{ nullptr };

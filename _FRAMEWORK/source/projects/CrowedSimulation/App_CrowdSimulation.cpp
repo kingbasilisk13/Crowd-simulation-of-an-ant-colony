@@ -11,7 +11,10 @@ App_CrowdSimulation::~App_CrowdSimulation()
 {
 	for (Food* pFood : m_pFoodVec)
 	{
-		SAFE_DELETE(pFood);
+		if(pFood)
+		{
+			SAFE_DELETE(pFood);
+		}
 	}
 
 	for(auto ant: m_pAnts)
@@ -21,6 +24,7 @@ App_CrowdSimulation::~App_CrowdSimulation()
 	SAFE_DELETE(m_pBehaviorTree);
 	SAFE_DELETE(m_pInfluenceMapFood);
 	SAFE_DELETE(m_pInfluenceMapHome);
+	SAFE_DELETE(m_pInfluenceMapHunger);
 }
 
 void App_CrowdSimulation::Start()
@@ -29,25 +33,30 @@ void App_CrowdSimulation::Start()
 	DEBUGRENDERER2D->GetActiveCamera()->SetZoom(200.f);
 	DEBUGRENDERER2D->GetActiveCamera()->SetCenter(Elite::Vector2(200, 200));
 
-	Vector2 centerWorld = { m_WorldSize * 0.5f, m_WorldSize * 0.5f };
+	 m_CenterWorld = { m_WorldSize * 0.5f, m_WorldSize * 0.5f };
 
+
+	 const float decay{ 0.3f };
+	 const float momentum{ 1.f - decay };
 	//influence maps
 	m_pInfluenceMapFood = new InfluenceMap(50, 50, 8);
-	m_pInfluenceMapFood->SetDecay(0.1f);
-	m_pInfluenceMapFood->SetMomentum(0.99f);
+	m_pInfluenceMapFood->SetDecay(decay);
+	m_pInfluenceMapFood->SetMomentum(momentum);
 
 	m_pInfluenceMapHome = new InfluenceMap(50, 50, 8);
-	m_pInfluenceMapHome->SetDecay(0.1f);
-	m_pInfluenceMapHome->SetMomentum(0.99f);
+	m_pInfluenceMapHome->SetDecay(decay);
+	m_pInfluenceMapHome->SetMomentum(momentum);
+	
+	m_pInfluenceMapHunger = new InfluenceMap(50, 50, 8);
+	m_pInfluenceMapHunger->SetDecay(decay);
+	m_pInfluenceMapHunger->SetMomentum(momentum);
 
 	//Spawn food
 	m_pFoodVec.reserve(m_AmountOfFoodItems);
 	for (int idx = 0; idx < m_AmountOfFoodItems; ++idx)
 	{
 		float angle = Elite::randomFloat(float(M_PI) * 2);
-		Vector2 pos = centerWorld + Elite::OrientationToVector(angle) * m_FoodDistance;
-		//Vector2 pos = centerWorld + Elite::OrientationToVector(angle) * 10.f;
-
+		Vector2 pos = m_CenterWorld + Elite::OrientationToVector(angle) * m_FoodDistance;
 		m_pFoodVec.emplace_back(new Food(pos, m_FoodAmount));
 	}
 
@@ -55,21 +64,26 @@ void App_CrowdSimulation::Start()
 	for(int i{0}; i < m_StartAmountOfWorkers; ++i)
 	{
 		WorkerAnt* pWorker = new WorkerAnt();
-		pWorker->SetPosition(centerWorld);
+		pWorker->SetPosition(m_CenterWorld);
 		m_pAnts.push_back(pWorker);
 	}
 
 	for (int i{ 0 }; i < m_StartAmountOfSoldiers; ++i)
 	{
 		SoldierAnt* pSoldier = new SoldierAnt();
-		pSoldier->SetPosition(centerWorld);
+		pSoldier->SetPosition(m_CenterWorld);
 		m_pAnts.push_back(pSoldier);
 	}
 
 	QueenAnt* pQueen = new QueenAnt();
-	pQueen->SetPosition(centerWorld);
+	pQueen->SetPosition(m_CenterWorld);
 	m_pAnts.push_back(pQueen);
 
+	for (auto& ant : m_pAnts)
+	{
+		ant->TrimToWorld(m_WorldSize, false);
+	}
+	
 	CreateBlackboard();
 	CreateBehaviorTree();
 }
@@ -81,6 +95,7 @@ void App_CrowdSimulation::Update(float deltaTime)
 	{
 		m_pInfluenceMapFood->Update(deltaTime);
 		m_pInfluenceMapHome->Update(deltaTime);
+		m_pInfluenceMapHunger->Update(deltaTime);
 
 		m_pBlackboard->GetData("Ants", m_pAnts);
 
@@ -96,7 +111,24 @@ void App_CrowdSimulation::Update(float deltaTime)
 		for (const auto& ant : m_pAnts)
 		{
 			ant->Update(deltaTime);
+			ant->TrimToWorld(m_WorldSize, false);
 		}
+
+		m_pBlackboard->GetData("FoodSpots", m_pFoodVec);
+
+		for(int i{ static_cast<int>(m_pFoodVec.size())-1}; i >= 0; --i)
+		{
+			if (m_pFoodVec[i]->GetAmount() == 0)
+			{
+				SAFE_DELETE(m_pFoodVec[i]);
+				
+				float angle = Elite::randomFloat(float(M_PI) * 2);
+				Vector2 pos = m_CenterWorld + Elite::OrientationToVector(angle) * m_FoodDistance;
+
+				m_pFoodVec[i] = new Food(pos, m_FoodAmount);
+			}
+		}
+		m_pBlackboard->ChangeData("FoodSpots", m_pFoodVec);
 
 		QueenAnt* pQueen{};
 		m_pBlackboard->GetData("Queen", pQueen);
@@ -180,6 +212,7 @@ void App_CrowdSimulation::UpdateUI()
 
 		ImGui::Checkbox("Show Food Influence map ", &m_RenderInfluenceMapFood);
 		ImGui::Checkbox("Show Home Influence map ", &m_RenderInfluenceMapHome);
+		ImGui::Checkbox("Show Hunger Influence map ", &m_RenderInfluenceMapHunger);
 
 		auto momentum = m_pInfluenceMapFood->GetMomentum();
 		auto decay = m_pInfluenceMapFood->GetDecay();
@@ -194,9 +227,14 @@ void App_CrowdSimulation::UpdateUI()
 		m_pInfluenceMapFood->SetMomentum(momentum);
 		m_pInfluenceMapFood->SetDecay(decay);
 		m_pInfluenceMapFood->SetPropagationInterval(propagationInterval);
+		
 		m_pInfluenceMapHome->SetMomentum(momentum);
 		m_pInfluenceMapHome->SetDecay(decay);
 		m_pInfluenceMapHome->SetPropagationInterval(propagationInterval);
+		
+		m_pInfluenceMapHunger->SetMomentum(momentum);
+		m_pInfluenceMapHunger->SetDecay(decay);
+		m_pInfluenceMapHunger->SetPropagationInterval(propagationInterval);
 
 		//Ant Parameters
 		ImGui::Text("Ants");
@@ -237,9 +275,18 @@ void App_CrowdSimulation::Render(float deltaTime) const
 	}
 
 	if (m_RenderInfluenceMapFood)
+	{
 		m_pInfluenceMapFood->Render();
+	}
 	else if (m_RenderInfluenceMapHome)
+	{
 		m_pInfluenceMapHome->Render();
+	}
+	else if (m_RenderInfluenceMapHunger)
+	{
+		m_pInfluenceMapHunger->Render();
+	}
+		
 }
 
 void App_CrowdSimulation::CreateBlackboard()
@@ -271,9 +318,13 @@ void App_CrowdSimulation::CreateBlackboard()
 
 	Food* pFood{};
 	m_pBlackboard->AddData("TargetFoodSpot", pFood);
+
+	AntBase* pStarvingAnt{};
+	m_pBlackboard->AddData("TargetStarvingAnt", pStarvingAnt);
 	
 	m_pBlackboard->AddData("FoodMap", m_pInfluenceMapFood);
 	m_pBlackboard->AddData("HomeMap", m_pInfluenceMapHome);
+	m_pBlackboard->AddData("HungerMap", m_pInfluenceMapHunger);
 }
 
 void App_CrowdSimulation::CreateBehaviorTree()
@@ -299,6 +350,33 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 				{
 					new BehaviorSequence(
 						{
+							new BehaviorSelector(
+								{
+									new BehaviorConditional(BT_Conditions::IsSocialStomachFull),
+									new BehaviorConditional(BT_Conditions::IsSocialStomachNotEmpty)
+								}
+							),
+							new BehaviorAction(BT_Actions::SetHungerMapAsReadMap),
+							new BehaviorSelector(
+								{
+									new BehaviorSequence(
+										{
+											new BehaviorConditional(BT_Conditions::IsStarvingAntInRange),
+											new BehaviorAction(BT_Actions::FeedStarvingAnt)
+										}
+									),
+								}
+							)
+						}
+					),
+					new BehaviorSequence(
+						{
+							new BehaviorConditional(BT_Conditions::IsAntStarving),
+							new BehaviorAction(BT_Actions::SetHungerMapAsWriteMap)
+						}
+					),
+					new BehaviorSequence(
+						{
 							new BehaviorConditional(BT_Conditions::IsAntIdle),
 							new BehaviorSelector(
 								{
@@ -306,6 +384,12 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 										{
 											new BehaviorConditional(BT_Conditions::IsSocialStomachEmpty),
 											new BehaviorAction(BT_Actions::StartScavengingForFood)
+										}
+									),
+									new BehaviorSequence(
+										{
+											new BehaviorConditional(BT_Conditions::IsAntStarving),
+											new BehaviorAction(BT_Actions::SetHungerMapAsWriteMap)
 										}
 									)
 								}
@@ -377,7 +461,19 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateSoldierAntSequence()
 	return new BehaviorSequence(
 		{
 			new BehaviorConditional(BT_Conditions::IsThisASoldierAnt),
-			new BehaviorAction(BT_Actions::ThisIsASoldier)
+			new BehaviorAction(BT_Actions::SetHomeMapAsReadMap),
+			new BehaviorAction(BT_Actions::SetHomeMapAsWriteMap),
+			new BehaviorSelector(
+				{
+					new BehaviorSequence(
+						{
+							new BehaviorConditional(BT_Conditions::IsAntStarving),
+							new BehaviorAction(BT_Actions::SetHungerMapAsWriteMap)
+						}
+					),
+					new BehaviorConditional(BT_Conditions::ReturnTrue)
+				}
+			)
 		}
 	);
 }
@@ -387,7 +483,19 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateQueenAntSequence()
 	return new BehaviorSequence(
 		{
 			new BehaviorConditional(BT_Conditions::CanQueenSpawnBrood),
-			new BehaviorAction(BT_Actions::SpawnBrood)
+			new BehaviorAction(BT_Actions::SpawnBrood),
+			new BehaviorAction(BT_Actions::SetHomeMapAsWriteMap),
+			new BehaviorSelector(
+				{
+					new BehaviorSequence(
+						{
+							new BehaviorConditional(BT_Conditions::IsAntStarving),
+							new BehaviorAction(BT_Actions::SetHungerMapAsWriteMap)
+						}
+					),
+					new BehaviorConditional(BT_Conditions::ReturnTrue)
+				}
+			)
 		}
 	);
 }

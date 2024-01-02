@@ -25,18 +25,22 @@ private:
 	
 	const int m_StartAmountOfWorkers{ 50 };
 	const int m_StartAmountOfSoldiers{ 20 };
-	const int m_AmountOfFoodItems{ 3 };
+	const int m_AmountOfFoodItems{ 30 };
 	const int m_FoodAmount{ 1000 };
 	const float m_FoodDistance{ 150.f };
 
 	float m_WorldSize = 400.f;
 
+	Elite::Vector2 m_CenterWorld{};
+
 	//Influence maps
 	Elite::InfluenceMap* m_pInfluenceMapFood{ nullptr };
 	Elite::InfluenceMap* m_pInfluenceMapHome{ nullptr };
+	Elite::InfluenceMap* m_pInfluenceMapHunger{ nullptr };
 
 	bool m_RenderInfluenceMapFood{ false };
 	bool m_RenderInfluenceMapHome{ false };
+	bool m_RenderInfluenceMapHunger{ false };
 
 	//Food sources
 	std::vector<Food*> m_pFoodVec{};
@@ -48,18 +52,11 @@ private:
 
 	
 	//Ant parameters
-	float m_AntSpawnInterval{ 0.5f };
-
-	float m_AntSpawnTimer{ 0.f };
-
 	float m_AntWanderPct{ 0.1f };
 	float m_AntSampleDist{ 10.f };
 	float m_AntSampleAngle{ 45.f };
 	float m_InfluencePerSecond{ 10.f };
 	bool m_RenderAntDebug{ true };
-
-	/*void CheckTakeFoodSources(AntAgent* pAgent);
-	void CheckDropFood(AntAgent* pAgent);*/
 
 	//ants
 	std::vector<AntBase*> m_pAnts{};

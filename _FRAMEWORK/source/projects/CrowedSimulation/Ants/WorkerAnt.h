@@ -26,7 +26,7 @@ public:
 	int GetSocialStomach() const { return m_SocialStomach; };
 
 private:
-	const int m_MaxSizeSocialStomach{ 200 };
+	const int m_MaxSizeSocialStomach{ 50 };
 	int m_SocialStomach{ 0 };
 
 	bool m_HoldingGarbage{ false };
