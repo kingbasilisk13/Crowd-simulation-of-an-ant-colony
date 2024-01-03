@@ -17,9 +17,12 @@ App_CrowdSimulation::~App_CrowdSimulation()
 		}
 	}
 
-	for(auto ant: m_pAnts)
+	for(AntBase* pAnt: m_pAnts)
 	{
-		SAFE_DELETE(ant);
+		if (pAnt)
+		{
+			SAFE_DELETE(pAnt);
+		}
 	}
 	SAFE_DELETE(m_pBehaviorTree);
 	SAFE_DELETE(m_pInfluenceMapFood);
@@ -98,7 +101,6 @@ void App_CrowdSimulation::Update(float deltaTime)
 		m_pInfluenceMapHunger->Update(deltaTime);
 
 		m_pBlackboard->GetData("Ants", m_pAnts);
-
 		//the first loop is used to update the behavior of the ants
 		for (const auto& ant : m_pAnts)
 		{
@@ -108,20 +110,12 @@ void App_CrowdSimulation::Update(float deltaTime)
 		}
 
 		//the second loop makes the ants act upon the set behavior.
-		for (auto& ant : m_pAnts)
+		for (int i{ static_cast<int>(m_pAnts.size()) - 1 }; i >= 0; --i)
 		{
-			ant->Update(deltaTime);
-			ant->TrimToWorld(m_WorldSize, false);
-
-			if(ant->IsAntDead())
-			{
-				Elite::Vector2 position = ant->GetPosition();
-				SAFE_DELETE(ant);
-				ant = new DeadAnt();
-				ant->SetPosition(position);
-			}
-
+			m_pAnts[i]->Update(deltaTime);
+			m_pAnts[i]->TrimToWorld(m_WorldSize, false);
 		}
+		
 
 		m_pBlackboard->GetData("FoodSpots", m_pFoodVec);
 		for(int i{ static_cast<int>(m_pFoodVec.size())-1}; i >= 0; --i)
@@ -173,11 +167,11 @@ void App_CrowdSimulation::UpdateUI()
 	else
 	{
 		//Setup
-		int menuWidth = 200;
+		int menuWidth = 230;
 		int const width = DEBUGRENDERER2D->GetActiveCamera()->GetWidth();
 		int const height = DEBUGRENDERER2D->GetActiveCamera()->GetHeight();
 		bool windowActive = true;
-		ImGui::SetNextWindowPos(ImVec2((float)width - menuWidth - 10, 10));
+		ImGui::SetNextWindowPos(ImVec2((float)width - menuWidth - 20, 10));
 		ImGui::SetNextWindowSize(ImVec2((float)menuWidth, (float)height - 90));
 		ImGui::Begin("Gameplay Programming", &windowActive, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 		ImGui::PushAllowKeyboardFocus(false);
@@ -248,15 +242,13 @@ void App_CrowdSimulation::UpdateUI()
 		ImGui::Text("Ants");
 		ImGui::Spacing();
 		ImGui::Spacing();
-		ImGui::SliderFloat("Influence Per Second", &m_InfluencePerSecond, 0.0f, 100.f, "%.2");
 		ImGui::SliderFloat("Wander Pct", &m_AntWanderPct, 0.0f, 1.f, "%.2");
 		ImGui::SliderFloat("Sample Distance", &m_AntSampleDist, 1.f, 20.f, "%.2");
 		ImGui::SliderFloat("Sample Angle", &m_AntSampleAngle, 0.f, 180.f, "%.2");
-		ImGui::Checkbox("Render debug", &m_RenderAntDebug);
+		ImGui::Checkbox("Render interaction range", &m_RenderAntInteractionRange);
 
 		for (const auto& ant : m_pAnts)
 		{
-			ant->SetInfluencePerSecond(m_InfluencePerSecond);
 			ant->SetWanderAmount(m_AntWanderPct);
 			ant->SetSampleDistance(m_AntSampleDist);
 			ant->SetSampleAngle(m_AntSampleAngle);
@@ -272,7 +264,7 @@ void App_CrowdSimulation::Render(float deltaTime) const
 {
 	for (const auto& ant : m_pAnts)
 	{
-		ant->Render(deltaTime);
+		ant->Render(deltaTime, m_RenderAntInteractionRange);
 	}
 
 	for (Food* pFood : m_pFoodVec)

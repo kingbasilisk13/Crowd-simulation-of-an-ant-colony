@@ -54,12 +54,21 @@ void AntBase::Update(float deltaTime)
 	ReadFromInfluenceMap(deltaTime);
 
 	SteeringAgent::Update(deltaTime);
+	
+	if(!m_IsAntDead)
+	{
+		IsAntDead();
+	}
 }
 
-void AntBase::Render(float dt)
+void AntBase::Render(float dt, bool renderInteractionRange)
 {
 	SteeringAgent::Render(dt);
-	DEBUGRENDERER2D->DrawCircle(SteeringAgent::GetPosition(), m_InteractionRange, { 1.f, 0.f, 0.f }, 0.5f);
+
+	if(renderInteractionRange)
+	{
+		DEBUGRENDERER2D->DrawCircle(SteeringAgent::GetPosition(), m_InteractionRange, { 0.f, 0.f, 1.f }, 0.2f);
+	}
 }
 
 void AntBase::EatFood(int food)
@@ -76,10 +85,19 @@ bool AntBase::IsStomachFull() const
 	return false;
 }
 
-bool AntBase::IsAntDead() const
+bool AntBase::IsAntDead()
 {
-	if(m_CurrentHealth <= 0.f)
+	if(m_IsAntDead)
 	{
+		return true;
+	}
+	else if(m_CurrentHealth <= 0.f)
+	{
+		SetAutoOrient(false);
+		SetMaxAngularSpeed(0.f);
+		SetMaxLinearSpeed(0.f);
+		SetBodyColor(Color{ 1.f, 1.f, 1.f });
+		m_IsAntDead = true;
 		return true;
 	}
 	return false;
@@ -106,7 +124,7 @@ void AntBase::WriteToInfluenceMap(float deltaTime)
 	}
 
 	Vector2 pos = GetPosition();
-	m_pWriteInfluenceMap->SetInfluenceAtPosition(pos, (m_CurrentInfluencePerSecond * deltaTime), true);
+	m_pWriteInfluenceMap->SetInfluenceAtPosition(pos, (m_InfluencePerSecond * deltaTime), true);
 }
 
 void AntBase::ReadFromInfluenceMap(float deltaTime)
@@ -117,9 +135,6 @@ void AntBase::ReadFromInfluenceMap(float deltaTime)
 	}
 
 	Vector2 pos = GetPosition();
-	m_CurrentInfluencePerSecond = m_CurrentInfluencePerSecond - 0.1f;
-
-	if (m_CurrentInfluencePerSecond < 0.1f) m_CurrentInfluencePerSecond = 0.1f;
 
 	float sampleAngleRadiance = m_sampleAngle * (M_PI / 180.f);
 

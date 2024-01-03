@@ -13,7 +13,6 @@ QueenAnt::QueenAnt()
 
 	m_LastTimePoinSpawnBrood = std::chrono::steady_clock::now();
 
-	m_CurrentEnergy = 400;
 }
 
 QueenAnt::~QueenAnt()
@@ -22,28 +21,9 @@ QueenAnt::~QueenAnt()
 
 void QueenAnt::Update(float deltaTime)
 {
-	//lower food
-	if(m_CurrentEnergy <= 0)
-	{
-		m_TimeBetweenHealthReduction += deltaTime;
-		if (m_TimeMaxBetweenHealthReduction < m_TimeBetweenHealthReduction)
-		{
-			m_TimeBetweenHealthReduction = 0.f;
-			m_CurrentHealth -= 1;
-		}
-	}
-	else
-	{
-		m_TimeBetweenEnergyReduction += deltaTime;
-		if (m_TimeMaxBetweenEnergyReduction < m_TimeBetweenEnergyReduction)
-		{
-			m_TimeBetweenEnergyReduction = 0.f;
-			m_CurrentEnergy -= 1;
-		}
-	}
+	m_Age = 0.f;
+	AntBase::Update(deltaTime);
 
-	WriteToInfluenceMap(deltaTime);
-	ReadFromInfluenceMap(deltaTime);
 }
 
 bool QueenAnt::SpawnBrood()

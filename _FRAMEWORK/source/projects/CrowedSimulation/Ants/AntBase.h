@@ -28,14 +28,14 @@ public:
 	virtual ~AntBase();
 
 	virtual void Update(float deltaTime);
-	void Render(float dt);
+	void Render(float dt, bool renderInteractionRange = false);
 
 	//public functions
 	void EatFood(int food);
 
 	bool IsStomachFull() const;
 
-	bool IsAntDead() const;
+	bool IsAntDead();
 
 	void SetWanderAmount(float wanderPct);
 	
@@ -50,8 +50,8 @@ public:
 
 	float GetInteractionRange() const { return m_InteractionRange; };
 
-	float GetInfluencePerSecond() const { return m_CurrentInfluencePerSecond; }
-	void SetInfluencePerSecond(float influence) { m_CurrentInfluencePerSecond = influence; }
+	float GetInfluencePerSecond() const { return m_InfluencePerSecond; }
+	void SetInfluencePerSecond(float influence) { m_InfluencePerSecond = influence; }
 
 	float GetSampleDistance() const { return m_sampleDistance; }
 	void SetSampleDistance(float sampleDistance) { m_sampleDistance = sampleDistance; }
@@ -66,20 +66,22 @@ protected:
 	//base stats
 	Status m_CurrentStatus{ Status::Idle };
 
-	const int m_MaxHealth{1000};
-	int m_CurrentHealth{1000};
+	bool m_IsAntDead{ false };
+
+	int m_MaxHealth{200};
+	int m_CurrentHealth{200};
 
 	const float m_TimeMaxBetweenHealthReduction{ 10.f };
 	float m_TimeBetweenHealthReduction{};
 
-	int m_MaxEnergy{1000};
-	int m_CurrentEnergy{1000};
+	int m_MaxEnergy{200};
+	int m_CurrentEnergy{200};
 
 	const float m_TimeMaxBetweenEnergyReduction{ 10.f };
 	float m_TimeBetweenEnergyReduction{};
 
 	float m_MaxLifeTime{1000};
-	float m_TimeSpend{1000};
+	float m_Age{0};
 
 	const float m_InteractionRange{ 10.f };
 	
@@ -89,8 +91,7 @@ protected:
 	BlendedSteering* m_pBlendedSteering{ nullptr };
 
 	//influence
-	float m_MaxInfluencePerSecond{ 10.f };
-	float m_CurrentInfluencePerSecond{ 10.f };
+	float m_InfluencePerSecond{ 10.f };
 	float m_sampleDistance{ 10.0f };
 	float m_sampleAngle{ 45.f };
 

@@ -8,6 +8,11 @@ WorkerAnt::WorkerAnt():
 
 	m_MaxEnergy = 50;
 	m_CurrentEnergy = 50;
+
+	m_MaxHealth = 50;
+	m_CurrentHealth = 50;
+
+	m_MaxLifeTime = float(rand() % 61 + 60);
 }
 
 WorkerAnt::~WorkerAnt()

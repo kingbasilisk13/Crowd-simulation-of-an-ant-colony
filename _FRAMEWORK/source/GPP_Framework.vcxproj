@@ -214,7 +214,6 @@
     <ClCompile Include="framework\EliteRendering\SDLIntegration\SDLHelpers\gl3w.c" />
     <ClCompile Include="framework\main.cpp" />
     <ClCompile Include="projects\CrowedSimulation\Ants\AntBase.cpp" />
-    <ClCompile Include="projects\CrowedSimulation\Ants\DeadAnt.cpp" />
     <ClCompile Include="projects\CrowedSimulation\Ants\QueenAnt.cpp" />
     <ClCompile Include="projects\CrowedSimulation\Ants\SoldierAnt.cpp" />
     <ClCompile Include="projects\CrowedSimulation\Ants\WorkerAnt.cpp" />
@@ -318,7 +317,6 @@
     <ClInclude Include="framework\EliteWindow\SDLWindow\SDLWindow.h" />
     <ClInclude Include="projects\App_Selector.h" />
     <ClInclude Include="projects\CrowedSimulation\Ants\AntBase.h" />
-    <ClInclude Include="projects\CrowedSimulation\Ants\DeadAnt.h" />
     <ClInclude Include="projects\CrowedSimulation\Ants\QueenAnt.h" />
     <ClInclude Include="projects\CrowedSimulation\Ants\SoldierAnt.h" />
     <ClInclude Include="projects\CrowedSimulation\Ants\WorkerAnt.h" />

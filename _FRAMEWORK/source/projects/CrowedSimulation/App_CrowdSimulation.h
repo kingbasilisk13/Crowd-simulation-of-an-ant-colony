@@ -5,7 +5,6 @@
 #include "Ants/QueenAnt.h"
 #include "Ants/SoldierAnt.h"
 #include "Ants/WorkerAnt.h"
-#include "Ants/DeadAnt.h"
 #include "Food/Food.h"
 
 class App_CrowdSimulation final : public IApp
@@ -26,7 +25,7 @@ private:
 	
 	const int m_StartAmountOfWorkers{ 50 };
 	const int m_StartAmountOfSoldiers{ 20 };
-	const int m_AmountOfFoodItems{ 30 };
+	const int m_AmountOfFoodItems{ 3 };
 	const int m_FoodAmount{ 1000 };
 	const float m_FoodDistance{ 150.f };
 
@@ -58,6 +57,7 @@ private:
 	float m_AntSampleAngle{ 45.f };
 	float m_InfluencePerSecond{ 10.f };
 	bool m_RenderAntDebug{ true };
+	bool m_RenderAntInteractionRange{ false };
 
 	//ants
 	std::vector<AntBase*> m_pAnts{};
