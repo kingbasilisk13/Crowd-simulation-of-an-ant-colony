@@ -108,14 +108,22 @@ void App_CrowdSimulation::Update(float deltaTime)
 		}
 
 		//the second loop makes the ants act upon the set behavior.
-		for (const auto& ant : m_pAnts)
+		for (auto& ant : m_pAnts)
 		{
 			ant->Update(deltaTime);
 			ant->TrimToWorld(m_WorldSize, false);
+
+			if(ant->IsAntDead())
+			{
+				Elite::Vector2 position = ant->GetPosition();
+				SAFE_DELETE(ant);
+				ant = new DeadAnt();
+				ant->SetPosition(position);
+			}
+
 		}
 
 		m_pBlackboard->GetData("FoodSpots", m_pFoodVec);
-
 		for(int i{ static_cast<int>(m_pFoodVec.size())-1}; i >= 0; --i)
 		{
 			if (m_pFoodVec[i]->GetAmount() == 0)

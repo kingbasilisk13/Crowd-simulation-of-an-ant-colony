@@ -60,6 +60,7 @@
     <ClCompile Include="projects\CrowedSimulation\Ants\WorkerAnt.cpp" />
     <ClCompile Include="projects\CrowedSimulation\App_CrowdSimulation.cpp" />
     <ClCompile Include="projects\CrowedSimulation\Food\Food.cpp" />
+    <ClCompile Include="projects\CrowedSimulation\Ants\DeadAnt.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -160,6 +161,7 @@
     <ClInclude Include="projects\CrowedSimulation\Ants\WorkerAnt.h" />
     <ClInclude Include="projects\CrowedSimulation\App_CrowdSimulation.h" />
     <ClInclude Include="projects\CrowedSimulation\Food\Food.h" />
+    <ClInclude Include="projects\CrowedSimulation\Ants\DeadAnt.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

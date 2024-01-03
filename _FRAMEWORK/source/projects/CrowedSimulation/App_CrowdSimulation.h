@@ -5,6 +5,7 @@
 #include "Ants/QueenAnt.h"
 #include "Ants/SoldierAnt.h"
 #include "Ants/WorkerAnt.h"
+#include "Ants/DeadAnt.h"
 #include "Food/Food.h"
 
 class App_CrowdSimulation final : public IApp
