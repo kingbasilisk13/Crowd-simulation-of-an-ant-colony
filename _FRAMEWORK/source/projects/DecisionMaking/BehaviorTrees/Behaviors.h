@@ -26,6 +26,50 @@ namespace BT_Actions
 		return Elite::BehaviorState::Success;
 	}
 
+	Elite::BehaviorState SetWriteMapToNull(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		pAnt->SetWriteInfluenceMap(nullptr);
+
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState SetReadMapToNull(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		pAnt->SetReadInfluenceMap(nullptr);
+
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState SetFoodMapAsWriteMap(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		Elite::InfluenceMap* pFoodMap{};
+		pBlackboard->GetData("FoodMap", pFoodMap);
+		pAnt->SetWriteInfluenceMap(pFoodMap);
+
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState SetFoodMapAsReadMap(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		Elite::InfluenceMap* pFoodMap{};
+		pBlackboard->GetData("FoodMap", pFoodMap);
+		pAnt->SetReadInfluenceMap(pFoodMap);
+
+		return Elite::BehaviorState::Success;
+	}
+
 	Elite::BehaviorState SetHungerMapAsWriteMap(Elite::Blackboard* pBlackboard)
 	{
 		AntBase* pAnt{};
@@ -76,27 +120,85 @@ namespace BT_Actions
 		return Elite::BehaviorState::Success;
 	}
 
-
-#pragma region WorkerAntActions
-	Elite::BehaviorState StartScavengingForFood(Elite::Blackboard* pBlackboard)
+	Elite::BehaviorState SetDeathMapAsWriteMap(Elite::Blackboard* pBlackboard)
 	{
-		WorkerAnt* pWorker{};
-		pBlackboard->GetData("CurrentWorker", pWorker);
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
 
-		pWorker->SetCurrentStatus(Status::Scavenging);
-
-		Elite::InfluenceMap* pFoodMap{};
-		pBlackboard->GetData("FoodMap", pFoodMap);
-		pWorker->SetReadInfluenceMap(pFoodMap);
-
-
-		Elite::InfluenceMap* pHomeMap{};
-		pBlackboard->GetData("HomeMap", pHomeMap);
-		pWorker->SetWriteInfluenceMap(pHomeMap);
+		Elite::InfluenceMap* pDeathMap{};
+		pBlackboard->GetData("DeathMap", pDeathMap);
+		pAnt->SetWriteInfluenceMap(pDeathMap);
 
 		return Elite::BehaviorState::Success;
 	}
 
+	Elite::BehaviorState SetDeathMapAsReadMap(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		Elite::InfluenceMap* pDeathMap{};
+		pBlackboard->GetData("DeathMap", pDeathMap);
+		pAnt->SetReadInfluenceMap(pDeathMap);
+
+		return Elite::BehaviorState::Success;
+	}
+
+	//todo: add threats
+	Elite::BehaviorState SetThreatMapAsWriteMap(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		Elite::InfluenceMap* pThreatMap{};
+		pBlackboard->GetData("ThreatMap", pThreatMap);
+		pAnt->SetWriteInfluenceMap(pThreatMap);
+
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState SetThreatMapAsReadMap(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		Elite::InfluenceMap* pThreatMap{};
+		pBlackboard->GetData("ThreatMap", pThreatMap);
+		pAnt->SetReadInfluenceMap(pThreatMap);
+
+		return Elite::BehaviorState::Success;
+	}
+
+
+#pragma region WorkerAntActions
+	Elite::BehaviorState GiveAntRandomJob(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* pWorker{};
+		pBlackboard->GetData("CurrentWorker", pWorker);
+
+		int randomNumber = rand() % 201;
+
+		if(randomNumber <= 50)
+		{
+			pWorker->SetCurrentStatus(Status::Cleaning);
+		}
+		else
+		{
+			pWorker->SetCurrentStatus(Status::Scavenging);
+		}
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState SetAntIdle(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* pWorker{};
+		pBlackboard->GetData("CurrentWorker", pWorker);
+
+		pWorker->SetCurrentStatus(Status::Idle);
+
+		return Elite::BehaviorState::Success;
+	}
+	
 	Elite::BehaviorState SetFoodInRangeAsTarget(Elite::Blackboard* pBlackboard)
 	{
 		WorkerAnt* worker{};
@@ -123,22 +225,72 @@ namespace BT_Actions
 		return Elite::BehaviorState::Failure;
 	}
 
-	Elite::BehaviorState StartCollectingFood(Elite::Blackboard* pBlackboard)
+	Elite::BehaviorState SetDeadAntInRangeAsTargetAnt(Elite::Blackboard* pBlackboard)
 	{
-		WorkerAnt* pWorker{};
-		pBlackboard->GetData("CurrentWorker", pWorker);
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
 
-		pWorker->SetCurrentStatus(Status::Collecting);
+		std::vector<AntBase*> m_pAnts{};
+		pBlackboard->GetData("Ants", m_pAnts);
 
-		Elite::InfluenceMap* pFoodMap{};
-		pBlackboard->GetData("FoodMap", pFoodMap);
-		pWorker->SetWriteInfluenceMap(pFoodMap);
+		Elite::Vector2 workerPosition{ worker->GetPosition() };
+		float interactionRange{ worker->GetInteractionRange() };
 
-		pWorker->SetReadInfluenceMap(nullptr);
+		for (AntBase* ant : m_pAnts)
+		{
+			if (ant->IsAntDead() && !ant->GetIsBeingCaried())
+			{
+				float distanceSquared = DistanceSquared(workerPosition, ant->GetPosition());
+
+				if (distanceSquared < (interactionRange * interactionRange))
+				{
+					pBlackboard->ChangeData("TargetDeadAnt", ant);
+					return Elite::BehaviorState::Success;
+				}
+			}
+		}
+		return Elite::BehaviorState::Failure;
+	}
+
+	Elite::BehaviorState SetGarbageSiteAsTarget(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		Elite::Vector2 garbageSiteLocation{};
+		pBlackboard->GetData("GarbageSiteLocation", garbageSiteLocation);
+
+		worker->SetSeekTarget(garbageSiteLocation);
 
 		return Elite::BehaviorState::Success;
 	}
 
+	Elite::BehaviorState SetStarvingAntInRangeAsTarget(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		std::vector<AntBase*> m_pAnts{};
+		pBlackboard->GetData("Ants", m_pAnts);
+
+		Elite::Vector2 workerPosition{ worker->GetPosition() };
+		float interactionRange{ worker->GetInteractionRange() };
+
+		for (AntBase* ant : m_pAnts)
+		{
+			float distanceSquared = DistanceSquared(workerPosition, ant->GetPosition());
+
+			if (distanceSquared < (interactionRange * interactionRange))
+			{
+				if (ant->GetCurrentStatus() == Status::Starving)
+				{
+					pBlackboard->ChangeData("TargetStarvingAnt", ant);
+					return Elite::BehaviorState::Success;
+				}
+			}
+		}
+		return Elite::BehaviorState::Failure;
+	}
 
 	Elite::BehaviorState CollectFood(Elite::Blackboard* pBlackboard)
 	{
@@ -148,38 +300,46 @@ namespace BT_Actions
 		Food* pFood{};
 		pBlackboard->GetData("TargetFoodSpot", pFood);
 		
+		pWorker->SetSeekTarget(pFood->GetPosition());
+
 		pWorker->StoreFoodInSocialStomach(pFood->TakeFood());
 
 		return Elite::BehaviorState::Success;
 	}
 
-	Elite::BehaviorState EatFood(Elite::Blackboard* pBlackboard)
+	Elite::BehaviorState CollectDeadAnt(Elite::Blackboard* pBlackboard)
 	{
 		WorkerAnt* pWorker{};
 		pBlackboard->GetData("CurrentWorker", pWorker);
 
-		Food* pFood{};
-		pBlackboard->GetData("TargetFoodSpot", pFood);
+		AntBase* pTargetDeadAnt{};
+		pBlackboard->GetData("TargetDeadAnt", pTargetDeadAnt);
 
-		pWorker->EatFood(pFood->GetAmount());
+		pWorker->SetDeadAnt(pTargetDeadAnt);
+
+		pTargetDeadAnt->SetIsBeingCaried(true);
 
 		return Elite::BehaviorState::Success;
 	}
 
-	Elite::BehaviorState StartGoingHome(Elite::Blackboard* pBlackboard)
+	Elite::BehaviorState DropDeadAnt(Elite::Blackboard* pBlackboard)
 	{
 		WorkerAnt* pWorker{};
 		pBlackboard->GetData("CurrentWorker", pWorker);
 
-		pWorker->SetCurrentStatus(Status::Returning);
+		pWorker->GetDeadAnt()->SetIsBeingCaried(false);
 
-		/*Elite::InfluenceMap* pFoodMap{};
-		pBlackboard->GetData("FoodMap", pFoodMap);*/
-		pWorker->SetWriteInfluenceMap(nullptr);
+		pWorker->SetDeadAnt(nullptr);
 
-		Elite::InfluenceMap* pHomeMap{};
-		pBlackboard->GetData("HomeMap", pHomeMap);
-		pWorker->SetReadInfluenceMap(pHomeMap);
+		return Elite::BehaviorState::Success;
+	}
+
+	Elite::BehaviorState StartFeedingOtherAnts(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* pWorker{};
+		pBlackboard->GetData("CurrentWorker", pWorker);
+
+		pWorker->SetCurrentStatus(Status::Feeding);
 
 		return Elite::BehaviorState::Success;
 	}
@@ -188,11 +348,9 @@ namespace BT_Actions
 	{
 		WorkerAnt* pWorker{};
 		pBlackboard->GetData("CurrentWorker", pWorker);
-		pWorker->SetCurrentStatus(Status::Feeding);
 
 		AntBase* pStarvingAnt{};
 		pBlackboard->GetData("TargetStarvingAnt", pStarvingAnt);
-		pStarvingAnt->SetCurrentStatus(Status::Eating);
 
 		pStarvingAnt->EatFood(pWorker->GiveFoodFromSocialStomach());
 
@@ -202,11 +360,7 @@ namespace BT_Actions
 
 
 #pragma region SoldierAntActions
-	Elite::BehaviorState ThisIsASoldier(Elite::Blackboard* pBlackboard)
-	{
-		//std::cout << "This is a soldier\n";
-		return Elite::BehaviorState::Success;
-	}
+	
 
 #pragma endregion
 
@@ -257,17 +411,16 @@ namespace BT_Conditions
 	{
 		AntBase* pAnt{};
 		pBlackboard->GetData("CurrentAnt", pAnt);
-		float current = pAnt->GetCurrentEnergy();
-		float max = pAnt->GetMaxEnergy();
 
-		float energyPercentage{ (current / max) * 100.f };
+		return pAnt->IsAntStarving();
+	}
 
-		if(energyPercentage <= 50.f)
-		{
-			pAnt->SetCurrentStatus(Status::Starving);
-			return true;
-		}
-		return false;
+	bool IsAntDead(Elite::Blackboard* pBlackboard)
+	{
+		AntBase* pAnt{};
+		pBlackboard->GetData("CurrentAnt", pAnt);
+
+		return pAnt->IsAntDead();
 	}
 
 #pragma region WorkerAntConditions
@@ -309,41 +462,27 @@ namespace BT_Conditions
 		return false;
 	}
 
-	bool IsAntCollecting(Elite::Blackboard* pBlackboard)
+	bool IsAntFeeding(Elite::Blackboard* pBlackboard)
 	{
 		WorkerAnt* worker{};
 		pBlackboard->GetData("CurrentWorker", worker);
 
-		if (worker->GetCurrentStatus() == Status::Collecting)
+		if (worker->GetCurrentStatus() == Status::Feeding)
 		{
 			return true;
 		}
 		return false;
 	}
 
-	bool IsFoodSpotEmpty(Elite::Blackboard* pBlackboard)
-	{
-		Food* pFood{};
-		pBlackboard->GetData("TargetFoodSpot", pFood);
-
-		if (pFood->GetAmount() == 0)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	bool AreBothStomachsFull(Elite::Blackboard* pBlackboard)
+	bool IsAntCleaning(Elite::Blackboard* pBlackboard)
 	{
 		WorkerAnt* worker{};
 		pBlackboard->GetData("CurrentWorker", worker);
 
-		if (worker->IsSocialStomachFull() && worker->IsStomachFull())
+		if (worker->GetCurrentStatus() == Status::Cleaning)
 		{
 			return true;
 		}
-
 		return false;
 	}
 
@@ -360,64 +499,12 @@ namespace BT_Conditions
 		return false;
 	}
 
-	bool IsSocialStomachNotEmpty(Elite::Blackboard* pBlackboard)
-	{
-		WorkerAnt* worker{};
-		pBlackboard->GetData("CurrentWorker", worker);
-
-		if (worker->GetSocialStomach() == 0)
-		{
-			return false;
-		}
-
-		return true;
-	}
-
 	bool IsSocialStomachFull(Elite::Blackboard* pBlackboard)
 	{
 		WorkerAnt* worker{};
 		pBlackboard->GetData("CurrentWorker", worker);
 
 		if (worker->IsSocialStomachFull())
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	bool IsSocialStomachNotFull(Elite::Blackboard* pBlackboard)
-	{
-		WorkerAnt* worker{};
-		pBlackboard->GetData("CurrentWorker", worker);
-
-		if (worker->IsSocialStomachFull())
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	bool IsStomachEmpty(Elite::Blackboard* pBlackboard)
-	{
-		WorkerAnt* worker{};
-		pBlackboard->GetData("CurrentWorker", worker);
-
-		if (worker->GetCurrentEnergy() == 0)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	bool IsStomachNotFull(Elite::Blackboard* pBlackboard)
-	{
-		WorkerAnt* worker{};
-		pBlackboard->GetData("CurrentWorker", worker);
-
-		if (!worker->IsStomachFull())
 		{
 			return true;
 		}
@@ -448,6 +535,64 @@ namespace BT_Conditions
 		return false;
 	}
 
+	bool IsAntNearDeadAnt(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		std::vector<AntBase*> m_pAnts{};
+		pBlackboard->GetData("Ants", m_pAnts);
+
+		Elite::Vector2 workerPosition{ worker->GetPosition() };
+		float interactionRange{ worker->GetInteractionRange() };
+
+		for (AntBase* const ant : m_pAnts)
+		{
+			if(ant->IsAntDead() && !ant->GetIsBeingCaried())
+			{
+				float distanceSquared = DistanceSquared(workerPosition, ant->GetPosition());
+
+				if (distanceSquared < (interactionRange * interactionRange))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	bool IsAntNearGarbageSite(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		Elite::Vector2 garbageSiteLocation{};
+		pBlackboard->GetData("GarbageSiteLocation", garbageSiteLocation);
+
+		float interactionRange{ worker->GetInteractionRange() };
+
+		float distanceSquared = DistanceSquared(worker->GetPosition(), garbageSiteLocation);
+
+		if (distanceSquared < (interactionRange * interactionRange))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	bool IsAntHoldingDeadAnt(Elite::Blackboard* pBlackboard)
+	{
+		WorkerAnt* worker{};
+		pBlackboard->GetData("CurrentWorker", worker);
+
+		if(worker->GetDeadAnt())
+		{
+			return true;
+		}
+		return false;
+	}
+
 	bool IsStarvingAntInRange(Elite::Blackboard* pBlackboard)
 	{
 		WorkerAnt* worker{};
@@ -465,9 +610,8 @@ namespace BT_Conditions
 
 			if (distanceSquared < (interactionRange * interactionRange))
 			{
-				if(ant->GetCurrentStatus() == Status::Starving)
+				if(ant->IsAntStarving())
 				{
-					pBlackboard->ChangeData("TargetStarvingAnt", ant);
 					return true;
 				}
 			}

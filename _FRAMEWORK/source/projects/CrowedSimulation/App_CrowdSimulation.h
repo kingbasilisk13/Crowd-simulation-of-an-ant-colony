@@ -25,7 +25,7 @@ private:
 	
 	const int m_StartAmountOfWorkers{ 50 };
 	const int m_StartAmountOfSoldiers{ 20 };
-	const int m_AmountOfFoodItems{ 3 };
+	const int m_AmountOfFoodItems{ 100 };
 	const int m_FoodAmount{ 1000 };
 	const float m_FoodDistance{ 150.f };
 
@@ -37,14 +37,22 @@ private:
 	Elite::InfluenceMap* m_pInfluenceMapFood{ nullptr };
 	Elite::InfluenceMap* m_pInfluenceMapHome{ nullptr };
 	Elite::InfluenceMap* m_pInfluenceMapHunger{ nullptr };
+	Elite::InfluenceMap* m_pInfluenceMapDeath{ nullptr };
+	Elite::InfluenceMap* m_pInfluenceMapThreat{ nullptr };
 
 	bool m_RenderInfluenceMapFood{ false };
 	bool m_RenderInfluenceMapHome{ false };
 	bool m_RenderInfluenceMapHunger{ false };
+	bool m_RenderInfluenceMapDeath{ false };
+	bool m_RenderInfluenceMapThreat{ false };
+	
 
 	//Food sources
 	std::vector<Food*> m_pFoodVec{};
 	float m_foodRadius{ 20.f };
+
+	//garbage site
+	Elite::Vector2 m_GarbageSiteLocation{ 0,0 };
 
 	//Home parameters
 	Elite::Vector2 m_homePosition;
@@ -71,6 +79,7 @@ private:
 	//all functions needed to create the behavior tree
 	void CreateBehaviorTree();
 
+	Elite::BehaviorSequence* CreateDeadAntSequence();
 	Elite::BehaviorSequence* CreateWorkerAntSequence();
 	Elite::BehaviorSequence* CreateSoldierAntSequence();
 	Elite::BehaviorSequence* CreateQueenAntSequence();

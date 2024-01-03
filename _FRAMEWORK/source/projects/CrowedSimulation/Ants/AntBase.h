@@ -10,13 +10,11 @@ enum class Status
 {
 	Idle,
 	Scavenging,
-	Collecting,
-	Eating,
 	Feeding,
 	Starving,
 	Cleaning,
 	Defending,
-	Returning
+	Attacked
 };
 
 class AntBase : public SteeringAgent
@@ -41,9 +39,18 @@ public:
 	
 	void SetSeekTarget(Elite::Vector2 target);
 
+	void TakeDamage();
+
+	bool IsAntStarving() const;
 	//getters and setters
 	Status GetCurrentStatus() const { return m_CurrentStatus; } ;
 	void SetCurrentStatus(Status status) { m_CurrentStatus = status; };
+
+	AntBase* GetDeadAnt() const { return m_pDeadAnt; };
+	void SetDeadAnt(AntBase* pDeadAnt) { m_pDeadAnt = pDeadAnt; };
+
+	bool GetIsBeingCaried() const { return m_IsBeingCaried; };
+	void SetIsBeingCaried(bool caried) { m_IsBeingCaried = caried; };
 
 	int GetCurrentEnergy() const { return m_CurrentEnergy; };
 	int GetMaxEnergy() const { return m_MaxEnergy; };
@@ -68,6 +75,9 @@ protected:
 
 	bool m_IsAntDead{ false };
 
+	AntBase* m_pDeadAnt{ nullptr };
+	bool m_IsBeingCaried{ false };
+	
 	int m_MaxHealth{200};
 	int m_CurrentHealth{200};
 

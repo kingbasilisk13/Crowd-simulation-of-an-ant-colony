@@ -12,7 +12,7 @@ QueenAnt::QueenAnt()
 	SetBodyColor(Color{ 153.f/255.f, 0.f, 0.f });
 
 	m_LastTimePoinSpawnBrood = std::chrono::steady_clock::now();
-
+	m_InfluencePerSecond = 100.f;
 }
 
 QueenAnt::~QueenAnt()

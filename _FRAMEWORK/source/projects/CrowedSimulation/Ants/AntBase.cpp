@@ -30,6 +30,17 @@ AntBase::~AntBase()
 
 void AntBase::Update(float deltaTime)
 {
+	//uncoment this code to use ant life span.
+	/*if(m_Age >= m_MaxLifeTime)
+	{
+		m_CurrentEnergy = 0;
+		m_CurrentHealth = 0;
+	}
+	else
+	{
+		m_Age += deltaTime;
+	}*/
+
 	//lower food
 	if (m_CurrentEnergy <= 0)
 	{
@@ -55,6 +66,11 @@ void AntBase::Update(float deltaTime)
 
 	SteeringAgent::Update(deltaTime);
 	
+	if(m_pDeadAnt)
+	{
+		m_pDeadAnt->SetPosition(GetPosition());
+	}
+
 	if(!m_IsAntDead)
 	{
 		IsAntDead();
@@ -114,6 +130,22 @@ void AntBase::SetWanderAmount(float wanderPct)
 void AntBase::SetSeekTarget(Elite::Vector2 target)
 {
 	m_pSeek->SetTarget(target);
+}
+
+void AntBase::TakeDamage()
+{
+	m_CurrentStatus = Status::Idle;
+}
+
+bool AntBase::IsAntStarving() const
+{
+	float energyPercentage{ (float(m_CurrentEnergy) / m_MaxEnergy) * 100.f };
+
+	if (energyPercentage <= 50.f)
+	{
+		return true;
+	}
+	return false;
 }
 
 void AntBase::WriteToInfluenceMap(float deltaTime)
