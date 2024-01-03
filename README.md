@@ -36,6 +36,31 @@ These 2 factors are used to classify the folowing crowd simulations.
 
 This project falls somwhere between entity-based and agent-based approach. All ants will folow a predefined global law but they can also make decisions individualy based upon there suroundings.
 
+### Rule-based AI
+Rule-based AI is a way to implement decision-making in a crowd simulation. In this AI, each agent follows a script: when X occurs, do Y. This is used in cases where different agents with different roles are required. This AI usually uses a hierarchy, for example, Maslow's hierarchy of needs, where the lower the need is, the stronger it is.
+
+insert image here
+
+An example of this is a student walking to class. An explosion happens in front of them, and the student runs away. The student's need for safety is much stronger than its need to go to class. In the case of this project, the three kinds of ants will each have their own needs and will act according to which need is the strongest at that moment. Here is a rough description of the needs of each type of ant going from strongest to weakest.
+
+Queen:
+1. Call for help when attacked.
+2. Do not starve.
+3. Spawn more brood
+
+Soldier:
+1. Protect the colony.
+2. Do not starve.
+
+Worker:
+1. Attempt to stop invaders.
+2. Feed the colony.
+3. Clean up garbage.
+4. Collect food.
+5. Do not starve.
+
+In actual ant hives, these tasks would be split among the ants, with the age of the ant deciding what it must do. Younger ants stay and take care of the hive, while older ants go out looking for food. Therefore, this is not accurate to real-life ants, but it is the order of needs that this project will use.
+
 ## Components in more detail
 ### Steering behaviors:
 Steering behaviors are an amalgamation of different behaviors used to manage the movement of an AI. These are often very simple behaviors that utilize external factors such as goals, other agents, and obstacles to move the agent. Here are a few examples:
@@ -111,5 +136,8 @@ Before actually writing the program, here is a short description of how it is go
 ### Creating the ants
 To create the different ants a base class will be used where the other ants will be derived from.
 
+
+# Sources
+Crowd simulation Wikipedia: [https://en.wikipedia.org/wiki/Crowd_simulation](https://en.wikipedia.org/wiki/Crowd_simulation)
 
 
