@@ -42,12 +42,14 @@ public:
 	void TakeDamage();
 
 	bool IsAntStarving() const;
+
+	float GetBestSampleFromInfluenceMap();
 	//getters and setters
+	bool GetDeleteThisAnt() const { return m_DeleteThisAnt; };
+	void SetDeleteThisAnt(bool value) { m_DeleteThisAnt = value; };
+
 	Status GetCurrentStatus() const { return m_CurrentStatus; } ;
 	void SetCurrentStatus(Status status) { m_CurrentStatus = status; };
-
-	AntBase* GetDeadAnt() const { return m_pDeadAnt; };
-	void SetDeadAnt(AntBase* pDeadAnt) { m_pDeadAnt = pDeadAnt; };
 
 	bool GetIsBeingCaried() const { return m_IsBeingCaried; };
 	void SetIsBeingCaried(bool caried) { m_IsBeingCaried = caried; };
@@ -67,17 +69,23 @@ public:
 	void SetSampleAngle(float sampleAngle) { m_sampleAngle = sampleAngle; }
 
 	void SetReadInfluenceMap(Elite::InfluenceMap* pInfluenceMap) { m_pReadInfluenceMap = pInfluenceMap; };
-	void SetWriteInfluenceMap(Elite::InfluenceMap* pInfluenceMap) { m_pWriteInfluenceMap = pInfluenceMap; };
+	
+	void ClearWriteInfluenceMaps() { m_pWriteInfluenceMaps.clear(); };
+	void PushToWriteInfluenceMaps(Elite::InfluenceMap* pInfluenceMap) { m_pWriteInfluenceMaps.push_back(pInfluenceMap); };
+
+	//test function
+	void SetCurrentHealth(int value) { m_CurrentHealth = value; };
 
 protected:
 	//base stats
 	std::string m_Name{ "default" };
 	
+	bool m_DeleteThisAnt{ false };
+
 	Status m_CurrentStatus{ Status::Idle };
 
 	bool m_IsAntDead{ false };
 
-	AntBase* m_pDeadAnt{ nullptr };
 	bool m_IsBeingCaried{ false };
 	
 	int m_MaxHealth{200};
@@ -107,9 +115,10 @@ protected:
 	float m_sampleDistance{ 10.0f };
 	float m_sampleAngle{ 45.f };
 
+	
 	Elite::InfluenceMap* m_pReadInfluenceMap{ nullptr };
-	Elite::InfluenceMap* m_pWriteInfluenceMap{ nullptr };
+	std::vector<Elite::InfluenceMap*> m_pWriteInfluenceMaps{};
 
 	void WriteToInfluenceMap(float deltaTime);
-	void ReadFromInfluenceMap(float deltaTime);
+	void ReadFromInfluenceMap();
 };

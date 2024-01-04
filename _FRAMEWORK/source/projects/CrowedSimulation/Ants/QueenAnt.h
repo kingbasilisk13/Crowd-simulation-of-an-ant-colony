@@ -16,7 +16,7 @@ public:
 	bool SpawnBrood();
 
 private:
-	const float m_MaxTimeBetweenSpawnBrood{ 30.f };
+	const float m_MaxTimeBetweenSpawnBrood{ 15.f };
 	
 	std::chrono::steady_clock::time_point m_LastTimePoinSpawnBrood{};
 

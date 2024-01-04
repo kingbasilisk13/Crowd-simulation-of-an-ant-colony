@@ -30,49 +30,42 @@ AntBase::~AntBase()
 
 void AntBase::Update(float deltaTime)
 {
-	//uncoment this code to use ant life span.
-	/*if(m_Age >= m_MaxLifeTime)
-	{
-		m_CurrentEnergy = 0;
-		m_CurrentHealth = 0;
-	}
-	else
-	{
-		m_Age += deltaTime;
-	}*/
-
-	//lower food
-	if (m_CurrentEnergy <= 0)
-	{
-		m_TimeBetweenHealthReduction += deltaTime;
-		if (m_TimeMaxBetweenHealthReduction < m_TimeBetweenHealthReduction)
-		{
-			m_TimeBetweenHealthReduction = 0.f;
-			m_CurrentHealth -= 1;
-		}
-	}
-	else
-	{
-		m_TimeBetweenEnergyReduction += deltaTime;
-		if (m_TimeMaxBetweenEnergyReduction < m_TimeBetweenEnergyReduction)
-		{
-			m_TimeBetweenEnergyReduction = 0.f;
-			m_CurrentEnergy -= 1;
-		}
-	}
-
 	WriteToInfluenceMap(deltaTime);
-	ReadFromInfluenceMap(deltaTime);
+	ReadFromInfluenceMap();
 
 	SteeringAgent::Update(deltaTime);
-	
-	if(m_pDeadAnt)
-	{
-		m_pDeadAnt->SetPosition(GetPosition());
-	}
 
 	if(!m_IsAntDead)
 	{
+		if (m_Age >= m_MaxLifeTime)
+		{
+			m_CurrentEnergy = 0;
+			m_CurrentHealth = 0;
+		}
+		else
+		{
+			m_Age += deltaTime;
+		}
+
+		//lower food
+		if (m_CurrentEnergy <= 0)
+		{
+			m_TimeBetweenHealthReduction += deltaTime;
+			if (m_TimeMaxBetweenHealthReduction < m_TimeBetweenHealthReduction)
+			{
+				m_TimeBetweenHealthReduction = 0.f;
+				m_CurrentHealth -= 1;
+			}
+		}
+		else
+		{
+			m_TimeBetweenEnergyReduction += deltaTime;
+			if (m_TimeMaxBetweenEnergyReduction < m_TimeBetweenEnergyReduction)
+			{
+				m_TimeBetweenEnergyReduction = 0.f;
+				m_CurrentEnergy -= 1;
+			}
+		}
 		IsAntDead();
 	}
 }
@@ -155,18 +148,51 @@ bool AntBase::IsAntStarving() const
 	return false;
 }
 
-void AntBase::WriteToInfluenceMap(float deltaTime)
+float AntBase::GetBestSampleFromInfluenceMap()
 {
-	if(!m_pWriteInfluenceMap)
+	if (!m_pReadInfluenceMap)
 	{
-		return;
+		return 0.f;
 	}
 
 	Vector2 pos = GetPosition();
-	m_pWriteInfluenceMap->SetInfluenceAtPosition(pos, (m_InfluencePerSecond * deltaTime), true);
+
+	float sampleAngleRadiance = m_sampleAngle * (M_PI / 180.f);
+
+	float rotation = GetRotation();
+
+	float bestSample{ 0 };
+
+	Vector2 bestSamplePos = pos;
+
+	for (int i{ -1 }; i < 2; ++i)
+	{
+		Vector2 position = Elite::OrientationToVector(rotation + (sampleAngleRadiance * i));
+
+		position = pos + (position * m_sampleDistance);
+
+		float newSample = m_pReadInfluenceMap->GetInfluenceAtPosition(position);
+
+		if (newSample > bestSample)
+		{
+			bestSample = newSample;
+			bestSamplePos = position;
+		}
+	}
+
+	return bestSample;
 }
 
-void AntBase::ReadFromInfluenceMap(float deltaTime)
+void AntBase::WriteToInfluenceMap(float deltaTime)
+{
+	for(int i{0}; i < m_pWriteInfluenceMaps.size(); ++i)
+	{
+		Vector2 pos = GetPosition();
+		m_pWriteInfluenceMaps[i]->SetInfluenceAtPosition(pos, (m_InfluencePerSecond * deltaTime), true);
+	}
+}
+
+void AntBase::ReadFromInfluenceMap()
 {
 	if (!m_pReadInfluenceMap)
 	{
@@ -197,6 +223,6 @@ void AntBase::ReadFromInfluenceMap(float deltaTime)
 			bestSamplePos = position;
 		}
 	}
-
+	
 	m_pSeek->SetTarget(bestSamplePos);
 }

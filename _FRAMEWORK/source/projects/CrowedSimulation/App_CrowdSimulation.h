@@ -25,7 +25,7 @@ private:
 	
 	const int m_StartAmountOfWorkers{ 50 };
 	const int m_StartAmountOfSoldiers{ 20 };
-	const int m_AmountOfFoodItems{ 100 };
+	const int m_AmountOfFoodItems{ 5 };
 	const int m_FoodAmount{ 1000 };
 	const float m_FoodDistance{ 150.f };
 
@@ -52,7 +52,7 @@ private:
 	float m_foodRadius{ 20.f };
 
 	//garbage site
-	Elite::Vector2 m_GarbageSiteLocation{ 0,0 };
+	Elite::Vector2 m_GarbageSiteLocation{ 20,20 };
 
 	//Home parameters
 	Elite::Vector2 m_homePosition;

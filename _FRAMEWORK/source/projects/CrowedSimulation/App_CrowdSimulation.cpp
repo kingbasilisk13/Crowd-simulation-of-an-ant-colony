@@ -11,18 +11,12 @@ App_CrowdSimulation::~App_CrowdSimulation()
 {
 	for (Food* pFood : m_pFoodVec)
 	{
-		if(pFood)
-		{
-			SAFE_DELETE(pFood);
-		}
+		SAFE_DELETE(pFood);
 	}
 
 	for(AntBase* pAnt: m_pAnts)
 	{
-		if (pAnt)
-		{
-			SAFE_DELETE(pAnt);
-		}
+		SAFE_DELETE(pAnt);
 	}
 	SAFE_DELETE(m_pBehaviorTree);
 	SAFE_DELETE(m_pInfluenceMapFood);
@@ -41,8 +35,8 @@ void App_CrowdSimulation::Start()
 	 m_CenterWorld = { m_WorldSize * 0.5f, m_WorldSize * 0.5f };
 
 
-	 const float decay{ 0.15f };
-	 const float momentum{ 1.f - decay };
+	 const float decay{ 0.2f };
+	 const float momentum{ 0.99f};
 	//influence maps
 	m_pInfluenceMapFood = new InfluenceMap(50, 50, 8);
 	m_pInfluenceMapFood->SetDecay(decay);
@@ -81,7 +75,7 @@ void App_CrowdSimulation::Start()
 	{
 		WorkerAnt* pWorker = new WorkerAnt();
 		pWorker->SetPosition(m_CenterWorld);
-		pWorker->SetInfluencePerSecond(50.f);
+		pWorker->SetInfluencePerSecond(20.f);
 		m_pAnts.push_back(pWorker);
 	}
 
@@ -89,11 +83,19 @@ void App_CrowdSimulation::Start()
 	{
 		SoldierAnt* pSoldier = new SoldierAnt();
 		pSoldier->SetPosition(m_CenterWorld);
+		pSoldier->SetInfluencePerSecond(20.f);
 		m_pAnts.push_back(pSoldier);
 	}
 
+	SoldierAnt* pSoldier = new SoldierAnt();
+	pSoldier->SetPosition(m_CenterWorld);
+	pSoldier->SetInfluencePerSecond(10.f);
+	pSoldier->SetCurrentHealth(0);
+	m_pAnts.push_back(pSoldier);
+
 	QueenAnt* pQueen = new QueenAnt();
 	pQueen->SetPosition(m_CenterWorld);
+	pQueen->SetInfluencePerSecond(100.f);
 	m_pAnts.push_back(pQueen);
 
 	for (auto& ant : m_pAnts)
@@ -107,7 +109,7 @@ void App_CrowdSimulation::Start()
 
 void App_CrowdSimulation::Update(float deltaTime)
 {
-	//stop the simulation the moment the queen is dead.
+	//stop the simulation the moment the queen is dead or the pause button is hit.
 	if(!m_QueenAntIsDead)
 	{
 		m_pInfluenceMapFood->Update(deltaTime);
@@ -126,12 +128,24 @@ void App_CrowdSimulation::Update(float deltaTime)
 		}
 
 		//the second loop makes the ants act upon the set behavior.
-		for (int i{ static_cast<int>(m_pAnts.size()) - 1 }; i >= 0; --i)
+		for (const auto& ant : m_pAnts)
 		{
-			m_pAnts[i]->Update(deltaTime);
-			m_pAnts[i]->TrimToWorld(m_WorldSize, false);
+			ant->Update(deltaTime);
+			ant->TrimToWorld(m_WorldSize, false);
 		}
 		
+		m_pBlackboard->GetData("Ants", m_pAnts);
+		//delete dead ants
+		for (int i{ static_cast<int>(m_pAnts.size()) - 1 }; i >= 0; --i)
+		{
+			if (m_pAnts[i]->GetDeleteThisAnt())
+			{
+				SAFE_DELETE(m_pAnts[i]);
+				m_pAnts[i] = m_pAnts.back();
+				m_pAnts.pop_back();
+			}
+		}
+		m_pBlackboard->ChangeData("Ants", m_pAnts);
 
 		m_pBlackboard->GetData("FoodSpots", m_pFoodVec);
 		for(int i{ static_cast<int>(m_pFoodVec.size())-1}; i >= 0; --i)
@@ -369,20 +383,27 @@ void App_CrowdSimulation::CreateBlackboard()
 	m_pBlackboard->AddData("DeathMap", m_pInfluenceMapDeath);
 	m_pBlackboard->AddData("ThreatMap", m_pInfluenceMapThreat);
 
-
 	m_pBlackboard->AddData("GarbageSiteLocation", m_GarbageSiteLocation);
+
+	m_pBlackboard->AddData("NumberOfScavangers", 0);
+	m_pBlackboard->AddData("NumberOfCleaners", 0);
 }
 
 void App_CrowdSimulation::CreateBehaviorTree()
 {
 	m_pBehaviorTree = new BehaviorTree(
 		m_pBlackboard,
-		new BehaviorSelector(
+		new BehaviorSequence(
 			{
-				CreateDeadAntSequence(),
-				CreateWorkerAntSequence(),
-				CreateSoldierAntSequence(),
-				CreateQueenAntSequence()
+				new BehaviorAction(BT_Actions::SetWriteMapsToNull),
+				new BehaviorSelector(
+					{
+						CreateDeadAntSequence(),
+						CreateWorkerAntSequence(),
+						CreateSoldierAntSequence(),
+						CreateQueenAntSequence()
+					}
+				)
 			}
 		)
 	);
@@ -393,8 +414,20 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateDeadAntSequence()
 	return new BehaviorSequence(
 		{
 			new BehaviorConditional(BT_Conditions::IsAntDead),
-			new BehaviorAction(BT_Actions::SetDeathMapAsWriteMap),
-			new BehaviorAction(BT_Actions::SetReadMapToNull)
+			new BehaviorAction(BT_Actions::PushDeathMapToWriteMaps),
+			new BehaviorAction(BT_Actions::SetReadMapToNull),
+			new BehaviorSelector(
+				{
+					new BehaviorSequence(
+						{
+							new BehaviorConditional(BT_Conditions::IsThisAWorkerAnt),
+							new BehaviorConditional(BT_Conditions::IsAntHoldingDeadAnt),
+							new BehaviorAction(BT_Actions::DropEverything)
+						}
+					),
+					new BehaviorConditional(BT_Conditions::ReturnTrue)
+				}
+			)
 		}
 	);
 }
@@ -411,7 +444,7 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 					new BehaviorSequence(
 						{
 							new BehaviorConditional(BT_Conditions::IsAntIdle),
-							new BehaviorAction(BT_Actions::GiveAntRandomJob)
+							new BehaviorAction(BT_Actions::GiveNewJob)
 						}
 					),
 					//scavenging
@@ -419,7 +452,7 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 						{
 							new BehaviorConditional(BT_Conditions::IsAntScavenging),
 							new BehaviorAction(BT_Actions::SetFoodMapAsReadMap),
-							new BehaviorAction(BT_Actions::SetHomeMapAsWriteMap),
+							new BehaviorAction(BT_Actions::PushHomeMapToWriteMaps),
 							new BehaviorSelector(
 								{
 									new BehaviorSequence(
@@ -432,7 +465,8 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 										{
 											new BehaviorConditional(BT_Conditions::IsAntNearFood),
 											new BehaviorAction(BT_Actions::SetFoodInRangeAsTarget),
-											new BehaviorAction(BT_Actions::SetFoodMapAsWriteMap),
+											new BehaviorAction(BT_Actions::SetWriteMapsToNull),
+											new BehaviorAction(BT_Actions::PushFoodMapToWriteMaps),
 											new BehaviorAction(BT_Actions::SetReadMapToNull),
 											new BehaviorAction(BT_Actions::CollectFood)
 										}
@@ -446,8 +480,7 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 					new BehaviorSequence(
 						{
 							new BehaviorConditional(BT_Conditions::IsAntFeeding),
-							new BehaviorAction(BT_Actions::SetHungerMapAsReadMap),
-							new BehaviorAction(BT_Actions::SetWriteMapToNull),
+							
 							new BehaviorSelector(
 								{
 									new BehaviorSequence(
@@ -458,12 +491,25 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 									),
 									new BehaviorSequence(
 										{
-											new BehaviorConditional(BT_Conditions::IsStarvingAntInRange),
-											new BehaviorAction(BT_Actions::SetStarvingAntInRangeAsTarget),
-											new BehaviorAction(BT_Actions::FeedStarvingAnt)
+											new BehaviorAction(BT_Actions::SetHungerMapAsReadMap),
+											new BehaviorAction(BT_Actions::SetWriteMapsToNull),
+											new BehaviorConditional(BT_Conditions::DoesAntSmellStarvingAnt),
+											new BehaviorSequence(
+												{
+													new BehaviorConditional(BT_Conditions::IsStarvingAntInRange),
+													new BehaviorAction(BT_Actions::SetStarvingAntInRangeAsTarget),
+													new BehaviorAction(BT_Actions::FeedStarvingAnt)
+												}
+											),
+											new BehaviorAction(BT_Actions::ReturnSuccess)
 										}
 									),
-									new BehaviorAction(BT_Actions::ReturnSuccess)
+									new BehaviorSequence(
+										{
+											new BehaviorAction(BT_Actions::SetHomeMapAsReadMap),
+											new BehaviorAction(BT_Actions::SetWriteMapsToNull),
+										}
+									)
 								}
 							)
 						}
@@ -472,8 +518,6 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 					new BehaviorSequence(
 						{
 							new BehaviorConditional(BT_Conditions::IsAntCleaning),
-							new BehaviorAction(BT_Actions::SetDeathMapAsReadMap),
-							new BehaviorAction(BT_Actions::SetWriteMapToNull),
 							new BehaviorSelector(
 								{
 									new BehaviorSequence(
@@ -481,7 +525,7 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 											new BehaviorConditional(BT_Conditions::IsAntHoldingDeadAnt),
 											new BehaviorAction(BT_Actions::SetGarbageSiteAsTarget),
 											new BehaviorAction(BT_Actions::SetReadMapToNull),
-											new BehaviorAction(BT_Actions::SetWriteMapToNull),
+											new BehaviorAction(BT_Actions::SetWriteMapsToNull),
 											new BehaviorSelector(
 												{
 													new BehaviorSequence(
@@ -498,12 +542,25 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 									),
 									new BehaviorSequence(
 										{
-											new BehaviorConditional(BT_Conditions::IsAntNearDeadAnt),
-											new BehaviorAction(BT_Actions::SetDeadAntInRangeAsTargetAnt),
-											new BehaviorAction(BT_Actions::CollectDeadAnt)
+											new BehaviorAction(BT_Actions::SetDeathMapAsReadMap),
+											new BehaviorAction(BT_Actions::SetWriteMapsToNull),
+											new BehaviorConditional(BT_Conditions::DoesAntSmellDeadAnt),
+											new BehaviorSequence(
+												{
+													new BehaviorConditional(BT_Conditions::IsAntNearDeadAnt),
+													new BehaviorAction(BT_Actions::SetDeadAntInRangeAsTargetAnt),
+													new BehaviorAction(BT_Actions::CollectDeadAnt)
+												}
+											),
+											new BehaviorAction(BT_Actions::ReturnSuccess)
 										}
 									),
-									new BehaviorAction(BT_Actions::ReturnSuccess)
+									new BehaviorSequence(
+										{
+											new BehaviorAction(BT_Actions::SetHomeMapAsReadMap),
+											new BehaviorAction(BT_Actions::SetWriteMapsToNull),
+										}
+									)
 								}
 							)
 						}
@@ -515,7 +572,7 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateWorkerAntSequence()
 					new BehaviorSequence(
 						{
 							new BehaviorConditional(BT_Conditions::IsAntStarving),
-							new BehaviorAction(BT_Actions::SetHungerMapAsWriteMap)
+							new BehaviorAction(BT_Actions::PushHungerMapToWriteMaps)
 						}
 					),
 					new BehaviorAction(BT_Actions::ReturnSuccess)
@@ -536,7 +593,7 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateSoldierAntSequence()
 					new BehaviorSequence(
 						{
 							new BehaviorConditional(BT_Conditions::IsAntStarving),
-							new BehaviorAction(BT_Actions::SetHungerMapAsWriteMap)
+							new BehaviorAction(BT_Actions::PushHungerMapToWriteMaps)
 						}
 					),
 					new BehaviorConditional(BT_Conditions::ReturnTrue)
@@ -550,15 +607,24 @@ Elite::BehaviorSequence* App_CrowdSimulation::CreateQueenAntSequence()
 {
 	return new BehaviorSequence(
 		{
-			new BehaviorConditional(BT_Conditions::CanQueenSpawnBrood),
-			new BehaviorAction(BT_Actions::SpawnBrood),
-			new BehaviorAction(BT_Actions::SetHomeMapAsWriteMap),
+			new BehaviorAction(BT_Actions::PushHomeMapToWriteMaps),
+			new BehaviorSelector(
+				{
+					new BehaviorSequence(
+						{
+							new BehaviorConditional(BT_Conditions::CanQueenSpawnBrood),
+							new BehaviorAction(BT_Actions::SpawnBrood)
+						}
+					),
+					new BehaviorConditional(BT_Conditions::ReturnTrue)
+				}
+			),
 			new BehaviorSelector(
 				{
 					new BehaviorSequence(
 						{
 							new BehaviorConditional(BT_Conditions::IsAntStarving),
-							new BehaviorAction(BT_Actions::SetHungerMapAsWriteMap)
+							new BehaviorAction(BT_Actions::PushHungerMapToWriteMaps)
 						}
 					),
 					new BehaviorConditional(BT_Conditions::ReturnTrue)

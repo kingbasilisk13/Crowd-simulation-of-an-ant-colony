@@ -9,12 +9,12 @@ SoldierAnt::SoldierAnt():
 	SetBodyColor(Color{ 102.f/255.f, 51.f/255.f, 0.f });
 
 	m_MaxEnergy = 100;
-	m_CurrentEnergy = 100;
+	m_CurrentEnergy = 50;
 
 	m_MaxHealth = 100;
 	m_CurrentHealth = 100;
 
-	m_MaxLifeTime = m_MaxLifeTime = float(rand() % 61 + 120);
+	m_MaxLifeTime = float(rand() % 500 + 500);
 
 	m_Name = "Soldier";
 }

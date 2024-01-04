@@ -25,10 +25,18 @@ public:
 
 	int GetSocialStomach() const { return m_SocialStomach; };
 
+	bool GetIsHoldingGarbage() const { return m_IsHoldingGarbage; };
+	void SetIsHoldingGarbage(bool value) { m_IsHoldingGarbage = value; };
+
+	AntBase* GetDeadAnt() const { return m_pDeadAnt; };
+	void SetDeadAnt(AntBase* pDeadAnt) { m_pDeadAnt = pDeadAnt; };
+
 private:
 	const int m_MaxSizeSocialStomach{ 50 };
 	int m_SocialStomach{ 0 };
 
-	bool m_HoldingGarbage{ false };
+	AntBase* m_pDeadAnt{ nullptr };
+
+	bool m_IsHoldingGarbage{ false };
 };
 

@@ -12,7 +12,7 @@ WorkerAnt::WorkerAnt():
 	m_MaxHealth = 50;
 	m_CurrentHealth = 50;
 
-	m_MaxLifeTime = float(rand() % 61 + 120);
+	m_MaxLifeTime = float(rand() % 500 + 500);
 
 	m_Name = "Worker";
 }
@@ -24,6 +24,11 @@ WorkerAnt::~WorkerAnt()
 void WorkerAnt::Update(float deltaTime)
 {
 	AntBase::Update(deltaTime);
+
+	if (m_IsHoldingGarbage && m_pDeadAnt)
+	{
+		m_pDeadAnt->SetPosition(GetPosition() + (GetDirection() * 5.f));
+	}
 }
 
 

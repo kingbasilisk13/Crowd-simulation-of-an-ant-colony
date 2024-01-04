@@ -12,8 +12,8 @@ QueenAnt::QueenAnt()
 	SetBodyColor(Color{ 153.f/255.f, 0.f, 0.f });
 
 	m_LastTimePoinSpawnBrood = std::chrono::steady_clock::now();
-	m_InfluencePerSecond = 100.f;
-
+	//m_InfluencePerSecond = 100.f;
+	m_CurrentEnergy = 50;
 	m_Name = "Queen";
 }
 
@@ -30,19 +30,12 @@ void QueenAnt::Update(float deltaTime)
 
 bool QueenAnt::SpawnBrood()
 {
-
 	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
 
 	if (std::chrono::duration_cast<std::chrono::seconds>(now - m_LastTimePoinSpawnBrood).count() > m_MaxTimeBetweenSpawnBrood)
 	{
 		m_LastTimePoinSpawnBrood = std::chrono::steady_clock::now();
 
-		AntBase* result{};
-
-		//1/4 chanse to spawn soldier. 3/4 chanse for worker.
-		int randomNumber = rand() % 101;
-
-		//todo: find way to spawn both workers and soldiers.
 		return true;
 	}
 
