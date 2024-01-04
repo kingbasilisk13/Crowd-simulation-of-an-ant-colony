@@ -77,13 +77,20 @@ void AntBase::Update(float deltaTime)
 	}
 }
 
-void AntBase::Render(float dt, bool renderInteractionRange)
+void AntBase::Render(float dt, bool renderInteractionRange, bool renderName)
 {
 	SteeringAgent::Render(dt);
 
 	if(renderInteractionRange)
 	{
 		DEBUGRENDERER2D->DrawCircle(SteeringAgent::GetPosition(), m_InteractionRange, { 0.f, 0.f, 1.f }, 0.2f);
+	}
+
+	if(renderName)
+	{
+		std::stringstream stream;
+		stream << m_Name;
+		DEBUGRENDERER2D->DrawString(SteeringAgent::GetPosition(), stream.str().c_str());
 	}
 }
 

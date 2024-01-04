@@ -13,6 +13,8 @@ QueenAnt::QueenAnt()
 
 	m_LastTimePoinSpawnBrood = std::chrono::steady_clock::now();
 	m_InfluencePerSecond = 100.f;
+
+	m_Name = "Queen";
 }
 
 QueenAnt::~QueenAnt()

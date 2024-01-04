@@ -272,6 +272,7 @@ void App_CrowdSimulation::UpdateUI()
 		ImGui::SliderFloat("Sample Distance", &m_AntSampleDist, 1.f, 20.f, "%.2");
 		ImGui::SliderFloat("Sample Angle", &m_AntSampleAngle, 0.f, 180.f, "%.2");
 		ImGui::Checkbox("Render interaction range", &m_RenderAntInteractionRange);
+		ImGui::Checkbox("Render name", &m_RenderAntName);
 
 		for (const auto& ant : m_pAnts)
 		{
@@ -290,7 +291,7 @@ void App_CrowdSimulation::Render(float deltaTime) const
 {
 	for (const auto& ant : m_pAnts)
 	{
-		ant->Render(deltaTime, m_RenderAntInteractionRange);
+		ant->Render(deltaTime, m_RenderAntInteractionRange, m_RenderAntName);
 	}
 
 	for (Food* pFood : m_pFoodVec)

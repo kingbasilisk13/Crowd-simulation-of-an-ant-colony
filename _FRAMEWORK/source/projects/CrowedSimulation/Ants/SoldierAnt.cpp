@@ -15,6 +15,8 @@ SoldierAnt::SoldierAnt():
 	m_CurrentHealth = 100;
 
 	m_MaxLifeTime = m_MaxLifeTime = float(rand() % 61 + 120);
+
+	m_Name = "Soldier";
 }
 
 SoldierAnt::~SoldierAnt()

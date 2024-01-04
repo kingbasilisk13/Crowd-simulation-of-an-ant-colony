@@ -64,8 +64,8 @@ private:
 	float m_AntSampleDist{ 10.f };
 	float m_AntSampleAngle{ 45.f };
 	float m_InfluencePerSecond{ 10.f };
-	bool m_RenderAntDebug{ true };
 	bool m_RenderAntInteractionRange{ false };
+	bool m_RenderAntName{ false };
 
 	//ants
 	std::vector<AntBase*> m_pAnts{};

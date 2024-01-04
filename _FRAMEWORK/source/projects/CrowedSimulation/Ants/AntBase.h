@@ -26,7 +26,7 @@ public:
 	virtual ~AntBase();
 
 	virtual void Update(float deltaTime);
-	void Render(float dt, bool renderInteractionRange = false);
+	void Render(float dt, bool renderInteractionRange = false, bool renderName = false);
 
 	//public functions
 	void EatFood(int food);
@@ -71,6 +71,8 @@ public:
 
 protected:
 	//base stats
+	std::string m_Name{ "default" };
+	
 	Status m_CurrentStatus{ Status::Idle };
 
 	bool m_IsAntDead{ false };
