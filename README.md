@@ -1,7 +1,9 @@
 # Crowd simulation of an ant colony.
 
+
 ## Abstract:
 Machine learning and AI enable us to program decision-making for non-player characters (NPCs) in video games. They can also be used to simulate the behavior of real-world animals. In the following research project, I will attempt to simulate the workings of an ant colony using crowd simulation. I will use a combination of steering behaviors, decision-making, and influence maps to create the simulation model.
+
 
 ## Introduction:
 Did you know that ants can be found nearly everywhere on earth, except Antarctica and a few inhospitable islands. This fact clearly indicates that ants are adapt at spreading to new places and surviving there. While this phenomenon poses challenges to the local ecosystems disrupted by the ants, it falls outside the scope of this project.
@@ -19,6 +21,7 @@ To achieve these behaviors, the following components will be used to create a cr
 * Influence map: This serves as a substitute for pheromones, enabling the ants to map out their surroundings without the need for pathfinding.
 
 The project will make use of a framework provided by the teachers of gameplay programming at DAE. This framework already contains working code for the previous components, which I will use as a base for the project.
+
 
 ## Crowd Simulation
 Crowd simulation is the process of simulation the movement and/or dynamics of a large number of entities. It is most commonly used to create realistic scenes of large crowds in movies and video games. It can also be used in crisis training, architecture and urban planning, and evacuation simulation. 
@@ -61,8 +64,7 @@ Worker:
 
 In actual ant hives, these tasks would be split among the ants, with the age of the ant deciding what it must do. Younger ants stay and take care of the hive, while older ants go out looking for food. Therefore, this is not accurate to real-life ants, but it is the order of needs that this project will use.
 
-## Components in more detail
-### Steering behaviors:
+## Steering behaviors:
 Steering behaviors are an amalgamation of different behaviors used to manage the movement of an AI. These are often very simple behaviors that utilize external factors such as goals, other agents, and obstacles to move the agent. Here are a few examples:
 
 * Seek: Move to a specific location.
@@ -73,29 +75,30 @@ Steering behaviors are an amalgamation of different behaviors used to manage the
 
 On their own, these behaviors are very limited, but combining them opens up a whole new world of possibilities. We will limit ourselves to the following two ways of combining steering behaviors: priority steering and blended steering.
 
-#### Priority steering:
+### Priority steering:
 Priority steering uses additional rules and checks to determine which steering behavior to prioritize. For example, if you want an agent that wanders around randomly but also evades obstacles, you can create a priority steering behavior using wander and evade. By default, the agent will use the wander behavior to move around, but the moment the agent detects an obstacle, it will switch to the evade behavior to move away from it.
 
-#### Blended steering:
+### Blended steering:
 Blended steering assigns a certain weight to each steering behavior. The higher the weight of the behavior, the more influence it will have on the movement of the agent. For example, if you combine the wander behavior and the seek behavior, each with a weight of 50%, you will get "drunk seek": an agent that tries to reach a specific point while never following a straight path.
 
-### Decision making:
+
+## Decision making:
 An agent should have the ability to choose what to do in certain situations. This is mostly manually programmed, but doing this for every situation is hard and time-consuming. It also results in code that contains giant if-else statements. To avoid this, several ways of decision-making have been developed to simplify and clean up this process. We will limit ourselves to Finite State Machine and Behavior Trees.
 
-#### Finite State Machine:
+### Finite State Machine:
 A finite state machine is a directed graph with each node representing a state in which the agent can be, and every link representing a transition to another state. An agent can only be in one state at a time and can only transition to another state to which it has a link. An example is the finite state machine used for deciding what animation to play at what time. This is, of course, very simplified but suffices for the current project.
 
-#### Behavior tree:
+### Behavior tree:
 A behavior tree is a directed acyclic graph, a directed graph with no cycles. The tree always starts at the same point, the root, and then makes its way down the tree. Depending on the results of the nodes, the agent will perform certain actions, or the program will return back down the tree. The nodes that return a result are called action nodes and can return one of the following three actions: succeeded, failed, or running. This result is sent to the composite node. This node decides what to do depending on the result of the action node. We will limit ourselves to the following two composite nodes: the sequence node and the selector node.
 
-##### The sequence node:
+#### The sequence node:
 The sequence node attempts to execute each action node in the given order. Depending on the results of the action nodes, the sequence executes a specific action:
 * Action node returns success: The sequence node starts executing the next action node.
 * Action node returns running: The sequence node aborts the execution and returns running.
 * Action node returns failed: The sequence node aborts the execution and returns failed.
 You can compare this node to an AND operation.
 
-##### The selector node:
+#### The selector node:
 The selector node attempts to execute each action node until a certain result is received:
 * Action node returns success: The selector node stops and returns success.
 * Action node returns running: The selector node stops and returns running.
@@ -106,15 +109,16 @@ Action nodes are used to make the agent do something and cannot have child nodes
 
 Combining this with the movement behavior from before will handle most of the decision-making and movement.
 
-### Influence maps
+
+## Influence maps
 Influence maps are a collection of the influence that agents have on the world. It is a spatial storage of influence that agents can use to make decisions. For example, if a lot of enemy agents have walked through the same area, their influence on that area will be significant, and an agent may know not to go there. This helps a group of agents make decisions more strategically. Different information needs to be stored in separate influence maps. Influence maps can also be used to store information from the past, predict agents' future positions, and give agents imperfect information. Influence spreads over the map; we call this influence propagation. There are multiple ways to propagate, but we will limit ourselves to the following two: convolution filters and map flooding.
 
-#### Convolution filters:
+### Convolution filters:
 A convolution filter is a blurring technique. Using a small matrix of numbers, also known as a kernel, on each pixel of an image will result in a new image where each pixel is a weighted sum of the pixels in the original image. Using this on an influence map means that each tile on the map will hold the weighted influence of the tiles in the previous iteration.
 The advantage of this is that each tile gets processed only once per iteration.
 The disadvantage of this is that it cannot combine influences into a new higher influence. It also does not work well when there are only a small number of influence sources.
 
-#### Map flooding:
+### Map flooding:
 Map flooding uses the flood fill algorithm to spread influence across the map. The flood fill algorithm is an algorithm that determines and alters the area connected to a given node. An example of this is the bucket tool in MS Paint.
 The advantage of this is that it is fast and can use terrain analysis to avoid obstacles.
 The disadvantage of this is that it is not good at combining influences because it picks the highest one.
@@ -131,13 +135,16 @@ To create the crowd simulation the folowing components are used:
 
 Before actually writing the program, here is a short description of how it is going to work. The main class will create a starting number of ants: 1 queen, 20 soldiers, and 50 worker ants. All the ants will be stored in a vector that stores objects of the type AntBase. After that, several influence maps will be created: food map, home map, garbage map, hunger map, and threat map. This information will be added to a blackboard that will contain all the necessary information for the behavior tree: the vector with all the ants, a pointer to the ant that is currently being handled. Using this blackboard, the behavior tree will be created. The tree will have a branch that contains the decisions for the type of ant that is being handled. Finally, during the update function, the program will go through the vector of ants, setting each ant as the handled ant in the blackboard and executing the behavior tree before going to the next ant in the vector. 
 
-
-
 ### Creating the ants
 To create the different ants a base class will be used where the other ants will be derived from.
 
-
 # Sources
 Crowd simulation Wikipedia: [https://en.wikipedia.org/wiki/Crowd_simulation](https://en.wikipedia.org/wiki/Crowd_simulation)
+Steering behaviors: Seeking and Arriving: [https://www.gamedev.net/blogs/entry/2264855-steering-behaviors-seeking-and-arriving/](https://www.gamedev.net/blogs/entry/2264855-steering-behaviors-seeking-and-arriving/)
+The Core Mechanics of Influence Mapping by Alex J. Champandard: [https://www.gamedev.net/tutorials/programming/artificial-intelligence/the-core-mechanics-of-influence-mapping-r2799/](https://www.gamedev.net/tutorials/programming/artificial-intelligence/the-core-mechanics-of-influence-mapping-r2799/)
 
+
+Image Processing: Convolution filters and Calculation of image gradients by Abhishake Yadav: [https://www.linkedin.com/pulse/image-processing-convolution-filters-calculation-gradients-yadav](https://www.linkedin.com/pulse/image-processing-convolution-filters-calculation-gradients-yadav)
+Coding Adventure: Ant and Slime Simulations by Sebastian Lague: [https://www.youtube.com/watch?v=X-iSQQgOd1A](https://www.youtube.com/watch?v=X-iSQQgOd1A)
+AntsCanada, youtube channel that is main source of information about ants: [https://www.youtube.com/@AntsCanada](https://www.youtube.com/@AntsCanada)
 
