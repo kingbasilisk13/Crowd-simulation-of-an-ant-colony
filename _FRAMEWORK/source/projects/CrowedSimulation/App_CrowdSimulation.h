@@ -25,9 +25,9 @@ private:
 	
 	const int m_StartAmountOfWorkers{ 50 };
 	const int m_StartAmountOfSoldiers{ 20 };
-	const int m_AmountOfFoodItems{ 5 };
+	const int m_AmountOfFoodItems{ 10 };
 	const int m_FoodAmount{ 1000 };
-	const float m_FoodDistance{ 150.f };
+	const float m_FoodDistance{ 100.f };
 
 	float m_WorldSize = 400.f;
 
