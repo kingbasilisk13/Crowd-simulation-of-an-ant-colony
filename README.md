@@ -43,6 +43,9 @@ This project falls somwhere between entity-based and agent-based approach. All a
 Rule-based AI is a way to implement decision-making in a crowd simulation. In this AI, each agent follows a script: when X occurs, do Y. This is used in cases where different agents with different roles are required. This AI usually uses a hierarchy, for example, Maslow's hierarchy of needs, where the lower the need is, the stronger it is.
 
 insert image here
+![By FireflySixtySeven - Own work using Inkscape, based on Maslow's paper, A Theory of Human Motivation., CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=36551248](https://upload.wikimedia.org/wikipedia/commons/3/33/MaslowsHierarchyOfNeeds.svg)
+By FireflySixtySeven - Own work using Inkscape, based on Maslow's paper, A Theory of Human Motivation., CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=36551248
+
 
 An example of this is a student walking to class. An explosion happens in front of them, and the student runs away. The student's need for safety is much stronger than its need to go to class. In the case of this project, the three kinds of ants will each have their own needs and will act according to which need is the strongest at that moment. Here is a rough description of the needs of each type of ant going from strongest to weakest.
 
