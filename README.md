@@ -39,9 +39,11 @@ These 2 factors are used to classify the following crowd simulations.
 For this simulation there is no specific time scale. The simulation will keep running as long as the queen survives. Crowd size could also dynamically change, it all depends on the population growth. This project falls somewhere between entity-based and agent-based approach. All ants will follow a predefined global law but they can also make decisions individually based upon there surroundings. But we still need a way to say what actions they can take and which one to take.
 
 ### Rule-based AI
-Rule-based AI is a way to implement decision-making in a crowd simulation. In this AI, each agent follows a script: when X occurs, do Y. This is used in cases where different agents with different roles are required. This AI usually uses a hierarchy, for example, Maslow's hierarchy of needs, where the lower the need is, the stronger it is.
+Rule-based AI is a way to implement decision-making in a crowd simulation. In this AI, each agent follows a script: when X occurs, do Y. This is used in cases where different agents with different roles are required. This AI usually uses a hierarchy, for example, Maslow's hierarchy of needs, where the lower the need is, the stronger it is.  
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/3/33/MaslowsHierarchyOfNeeds.svg" width="200" height="200" alt="By FireflySixtySeven - Own work using Inkscape, based on Maslow's paper, A Theory of Human Motivation., CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=36551248">
+<p align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/3/33/MaslowsHierarchyOfNeeds.svg" width="300" height="300" alt="By FireflySixtySeven - Own work using Inkscape, based on Maslow's paper, A Theory of Human Motivation., CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=36551248">
+</p>
 
 An example of this is a student walking to class. An explosion happens in front of them, and the student runs away. The student's need for safety is much stronger than its need to go to class. In the case of this project the most important need is to protect the colony. Each ant type will have their own needs but they are ordered in a way to protect the colony. Here is a rough description of the needs of each type of ant going from strongest to weakest.
 
@@ -76,7 +78,9 @@ On their own, these behaviors are very limited, but combining them opens up a wh
 ### Blended steering:
 Blended steering assigns a certain weight to each steering behavior. The higher the weight of the behavior, the more influence it will have on the movement of the agent. For example, if you combine the wander behavior and the seek behavior, each with a weight of 50%, you will get "drunk seek": an agent that tries to reach a specific point while never following a straight path.
 
-![Gif of drunk seek steerin](Images/DrunkSeek.gif)
+<p align="center">
+  <img src="Images/DrunkSeek.gif" alt="Gif of drunk seek steerin">
+</p>
 
 
 ## Decision making:
@@ -92,7 +96,9 @@ The sequence node attempts to execute each action node in the given order. Depen
 * Action node returns failed: The sequence node aborts the execution and returns failed.
 The node runs all the actions in sequence and stops when 1 action fails, preventing the actions after that one from being executed. The simulation will only make use of the success and the failed return state.
 
-<img src="Images/SequenceNodeExample.png" width="200" height="200" alt="By Swen Gaudl: Behaviour Tree featuring two sequence nodes. The Tree is traversed top to bottom, left to right creating a priority order for horizontal traversal and a vertical hierarchical structure.">
+<p align="center">
+  <img src="Images/SequenceNodeExample.png" alt="By Swen Gaudl: Behaviour Tree featuring two sequence nodes. The Tree is traversed top to bottom, left to right creating a priority order for horizontal traversal and a vertical hierarchical structure.">
+</p>
 
 #### The selector node:
 The selector node attempts to execute each action node until a certain result is received:
@@ -101,8 +107,11 @@ The selector node attempts to execute each action node until a certain result is
 * Action node returns failed: The selector node starts executing the next child.
 The selector node is the oposite of the sequence node because it will only stop if one of the nodes returns a success.
 
-Action nodes are used to make the agent do something and cannot have child nodes. This can be very limiting, especially if in a sequence you want to check if a certain condition is met before executing the rest of the sequence. To solve this, we use **conditional nodes**. Conditional nodes are nodes used to check a condition, and they return either true or false. An example of a selector node using conditional nodes.
-<img src="Images/SelectorNodeExample.png" width="200" height="200" alt="Selector node connected to 3 different condition nodes. The value to be checked is x equals zero. The selectors start on the left and goes to the right. The first condition node checks if x is less than zero and fails. The second node checks if x is zero and succeeds. The third node never gets executed and the selector returns success.">
+Action nodes are used to make the agent do something and cannot have child nodes. This can be very limiting, especially if in a sequence you want to check if a certain condition is met before executing the rest of the sequence. To solve this, we use **conditional nodes**. Conditional nodes are nodes used to check a condition, and they return either true or false. An example of a selector node using conditional nodes.  
+
+<p align="center">
+  <img src="Images/SelectorNodeExample.png" width="300" height="300" alt="Selector node connected to 3 different condition nodes. The value to be checked is x equals zero. The selectors start on the left and goes to the right. The first condition node checks if x is less than zero and fails. The second node checks if x is zero and succeeds. The third node never gets executed and the selector returns success.">
+</p>  
 Other nodes exist, but this project will be limited to only these nodes.
 
 
@@ -112,17 +121,24 @@ Influence maps are a collection of the influence that agents have on the world. 
 ### Convolution filters:
 A convolution filter is a blurring technique. Using a small matrix of numbers, also known as a kernel, on each pixel of an image will result in a new image where each pixel is a weighted sum of the pixels in the original image. Using this on an influence map means that each tile on the map will hold the weighted influence of the tiles in the previous iteration.
 
-<img src="Images/ExampleConvolutionFilter.png" width="200" height="200" alt="Example of bluring an image using a convolution filter from https://blog.naver.com/PostView.nhn?blogId=framkang&logNo=220561249726">
+<p align="center">
+  <img src="Images/ExampleConvolutionFilter.png" alt="Example of bluring an image using a convolution filter from https://blog.naver.com/PostView.nhn?blogId=framkang&logNo=220561249726">
+</p>  
 
 * The advantage of this is that each tile gets processed only once per iteration.
 * The disadvantage of this is that it cannot combine influences into a new higher influence. It also does not work well when there are only a small number of influence sources.
 The convolution filter used in this project is the folowing. This filter was already present in the framework.
-<img src="Images/UsedFilter.jpg" width="200" height="200" alt="Example of bluring an image using a convolution filter from https://blog.naver.com/PostView.nhn?blogId=framkang&logNo=220561249726">
+
+<p align="center">
+  <img src="Images/UsedFilter.jpg" alt="The used convolution filter.">
+</p>
 
 ### Map flooding:
 Map flooding uses the flood fill algorithm to spread influence across the map. The flood fill algorithm is an algorithm that determines and alters the area connected to a given node. An example of this is the bucket tool in MS Paint.  
 
-<img src="https://en.wikipedia.org/wiki/Flood_fill#/media/File:Recursive_Flood_Fill_4_(aka).gif" width="200" height="200" alt="By André Karwath aka Aka - Own work, CC BY-SA 2.5, https://commons.wikimedia.org/w/index.php?curid=481651">
+<p align="center">
+  <img src="Images/Recursive_Flood_Fill_4_(aka).gif" alt="By André Karwath aka Aka - Own work, CC BY-SA 2.5, https://commons.wikimedia.org/w/index.php?curid=481651">
+</p>  
 
 * The advantage of this is that it is fast and can use terrain analysis to avoid obstacles.
 * The disadvantage of this is that it is not good at combining influences because it picks the highest one.
@@ -136,9 +152,13 @@ Combining these two will result in influence propagation that will take the high
 ### The ants
 There are 3 types of ants: Queen, SoldierAnt and WorkerAnt. They are all derived from the base class AntBase. This base class contains all the code that every ant type need. This includes: getters and setters for the private variables, update function that updates the influence maps and the movement behavior. The base class also contains a pointer to the map where the ant needs to read from and a list of pointers to maps where it needs to write to. This is because there are situations where ants have influence on multiple maps at once. For example: the queen writes to the home map to indicate where the nest is but also writes to the hunger map to indicate that she needs food. The amount of influence an ant type has on the map is diferent for each type. The queen will have a higher influence than a worker ant. The worker ant class has some extra code for handeling and keeping track of their social stomach. Depending on the job of the worker ant they will have a different color, scavanger ants are orange and cleaner ants are blue.
 
-![Screenshots of the different ants in the simulation](Images/Ants.png)
+<p align="center">
+  <img src="Images/Ants.png" alt="Screenshots of the different ants in the simulation">
+</p>
 
-![Screenshots of a scavanger and cleaner ant](Images/ScavangerAndCleaner.png)
+<p align="center">
+  <img src="Images/ScavangerAndCleaner.png" alt="Screenshots of a scavanger and cleaner ant">
+</p>
 
 ### Blended steering
 Each ant classes uses blended steering object with a seek and a wander steering. The wander behavior is used to force the ant to explore. The seek behavior is used to move the ant in the direction of the highest value of the influence map. Bij default the wander steering has a weight of 0.1 while the seek has a weight of 0.9. This can be changed during the simulation using the debug controles.
@@ -185,19 +205,19 @@ I will give a short description of how each branch works, going into more detail
 **WorkerAntSequence**
 1. Chek if the ant is idle. If so it will be given the job to either scavenge for food or clean up dead ants. Depending on how many ants do wat job they are assigned a job to make sure there is a balance.
 2. Check if the ant is scavenging. If so it will get the food map to read from and the home map to write to.
-2.1. Check if the ants social stomach is full. If that is the case it will start feeding the other ants.
-2.2. Check if the ant is near food. If that is the case it will: go to the food, stop writing to the home map and start writing to the food map, stop reading from any map, collect food.
+    - Check if the ants social stomach is full. If that is the case it will start feeding the other ants.
+    - Check if the ant is near food. If that is the case it will: go to the food, stop writing to the home map and start writing to the food map, stop reading from any map, collect food.
 3. Chek if the ant is feeding.
-3.1. Check if its social stomach is empty. If so the ant will go idle.
-3.2. Start reading from the hunger map and stop writing to any map. It will also check if it can sense any hungry ants. To do this it will check if the value it gets from the read map is above a 0.
-3.2.1. If it is near a hungry ant it will set that ant as its target and start feeding it.
-3.3. If it is not near a hungry ant it will return to the nest by setting the home map as the read map.
+    - Check if its social stomach is empty. If so the ant will go idle.
+    - Start reading from the hunger map and stop writing to any map. It will also check if it can sense any hungry ants. To do this it will check if the value it gets from the read map is above a 0.
+      - If it is near a hungry ant it will set that ant as its target and start feeding it.
+    - If it is not near a hungry ant it will return to the nest by setting the home map as the read map.
 4. Check if the ant is cleaning
-4.1. If the ant is holding a dead ant it will set the garbage site as its target and move there.
-4.1.1 If it is near the garbage site it will drop the dead ant and become idle.
-4.2. The ant will set the dead map as its read map and check if there are any dead ants nearby.
-4.2.1 If there is a dead ant nearby that is not being caried yet it will collect the dead ant.
-4.3. If it does not detect any dead ants it will set the home map as the read map.
+    - If the ant is holding a dead ant it will set the garbage site as its target and move there.
+      - If it is near the garbage site it will drop the dead ant and become idle.
+    - The ant will set the dead map as its read map and check if there are any dead ants nearby.
+      - If there is a dead ant nearby that is not being caried yet it will collect the dead ant.
+    - If it does not detect any dead ants it will set the home map as the read map.
 5. Finaly there is a check to see if the ant is hungry. Same as with the soldier and queen.
 
 
@@ -205,17 +225,25 @@ I will give a short description of how each branch works, going into more detail
 The created simulation is able to run for a rather long time. Soldier ants constantly protect the queen. Worker ant clean up dead ants and collect food to feed the colony. The queen ant constantly spawns new brood. The trails on the influence maps do not stay long and are prone to errors, ant looping back on themselves.
 Here are few examples of the diferent ants after letting the simulation run for a while:
 
-Food map:
-<img src="Images/FoodInfluenceMap.png" width="200" height="200" alt="FoodInfluenceMap">
+Food map:  
+<p align="center">
+  <img src="Images/FoodInfluenceMap.png" alt="FoodInfluenceMap">
+</p>  
 
-Home map:
-<img src="Images/HomeInfluence.png" width="200" height="200" alt="FoodInfluenceMap">
+Home map:  
+<p align="center">
+  <img src="Images/HomeInfluence.png" alt="HomeInfluenceMap">
+</p>
 
-Hunger map:
-<img src="Images/HungerInfluence.png" width="200" height="200" alt="FoodInfluenceMap">
+Hunger map:  
+<p align="center">
+  <img src="Images/HungerInfluence.png" alt="HungerInfluenceMap">
+</p>  
 
-Death map:
-<img src="Images/DeathInfluence.png" width="200" height="200" alt="FoodInfluenceMap">
+Death map:  
+<p align="center">
+  <img src="Images/DeathInfluence.png" alt="DeathInfluenceMap">
+</p>  
 
 The results are not optimal. I assume this is caused by several posible factors: the values chosen for momentum and decay, the used convolution filter. There also seems to be a problem with the decision making as some cleaner ants, the blue ants, seem to ignore dead ants. Overal the simulation does not quit reach the results I had hoped for.
 
@@ -226,18 +254,18 @@ Making this project I realised that creating a crowed simulation is much more th
 Thank you for reading.
 
 # Sources
-Crowd simulation Wikipedia: [https://en.wikipedia.org/wiki/Crowd_simulation](https://en.wikipedia.org/wiki/Crowd_simulation)
+[Crowd simulation Wikipedia](https://en.wikipedia.org/wiki/Crowd_simulation)
 
-Steering behaviors: Seeking and Arriving: [https://www.gamedev.net/blogs/entry/2264855-steering-behaviors-seeking-and-arriving/](https://www.gamedev.net/blogs/entry/2264855-steering-behaviors-seeking-and-arriving/)
+[Steering behaviors: Seeking and Arriving](https://www.gamedev.net/blogs/entry/2264855-steering-behaviors-seeking-and-arriving/)
 
-Methods for Combining Autonomous Steering Behaviours: [https://alastaira.wordpress.com/2013/03/13/methods-for-combining-autonomous-steering-behaviours/](https://alastaira.wordpress.com/2013/03/13/methods-for-combining-autonomous-steering-behaviours/)
+[Methods for Combining Autonomous Steering Behaviours](https://alastaira.wordpress.com/2013/03/13/methods-for-combining-autonomous-steering-behaviours/)
 
-Behavior tree Wikipedia: [https://en.wikipedia.org/wiki/Behavior_tree_(artificial_intelligence,_robotics_and_control)](https://en.wikipedia.org/wiki/Behavior_tree_(artificial_intelligence,_robotics_and_control))
+[Behavior tree Wikipedia](https://en.wikipedia.org/wiki/Behavior_tree_(artificial_intelligence,_robotics_and_control))
 
-The Core Mechanics of Influence Mapping by Alex J. Champandard: [https://www.gamedev.net/tutorials/programming/artificial-intelligence/the-core-mechanics-of-influence-mapping-r2799/](https://www.gamedev.net/tutorials/programming/artificial-intelligence/the-core-mechanics-of-influence-mapping-r2799/)
+[The Core Mechanics of Influence Mapping by Alex J. Champandard](https://www.gamedev.net/tutorials/programming/artificial-intelligence/the-core-mechanics-of-influence-mapping-r2799/)
 
+[Image Processing: Convolution filters and Calculation of image gradients by Abhishake Yadav](https://www.linkedin.com/pulse/image-processing-convolution-filters-calculation-gradients-yadav)
 
-Image Processing: Convolution filters and Calculation of image gradients by Abhishake Yadav: [https://www.linkedin.com/pulse/image-processing-convolution-filters-calculation-gradients-yadav](https://www.linkedin.com/pulse/image-processing-convolution-filters-calculation-gradients-yadav)
-Coding Adventure: Ant and Slime Simulations by Sebastian Lague: [https://www.youtube.com/watch?v=X-iSQQgOd1A](https://www.youtube.com/watch?v=X-iSQQgOd1A)
-AntsCanada, youtube channel that is main source of information about ants: [https://www.youtube.com/@AntsCanada](https://www.youtube.com/@AntsCanada)
+[Coding Adventure: Ant and Slime Simulations by Sebastian Lague](https://www.youtube.com/watch?v=X-iSQQgOd1A)
 
+[AntsCanada, youtube channel that is main source of information about ants](https://www.youtube.com/@AntsCanada)
