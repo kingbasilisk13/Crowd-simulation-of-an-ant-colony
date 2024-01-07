@@ -53,30 +53,25 @@ private:
 
 	//garbage site
 	Elite::Vector2 m_GarbageSiteLocation{ 20,20 };
-
-	//Home parameters
-	Elite::Vector2 m_homePosition;
-	float m_homeRadius{ 20.f };
-
 	
 	//Ant parameters
 	float m_AntWanderPct{ 0.1f };
 	float m_AntSampleDist{ 10.f };
 	float m_AntSampleAngle{ 45.f };
 	float m_InfluencePerSecond{ 10.f };
+	
 	bool m_RenderAntInteractionRange{ false };
 	bool m_RenderAntName{ false };
 
 	//ants
 	std::vector<AntBase*> m_pAnts{};
 
-
+	//behavior tree
 	Elite::Blackboard* m_pBlackboard{ nullptr };
 	Elite::BehaviorTree* m_pBehaviorTree{ nullptr };
 
-	void CreateBlackboard();
-
 	//all functions needed to create the behavior tree
+	void CreateBlackboard();
 	void CreateBehaviorTree();
 
 	Elite::BehaviorSequence* CreateDeadAntSequence();

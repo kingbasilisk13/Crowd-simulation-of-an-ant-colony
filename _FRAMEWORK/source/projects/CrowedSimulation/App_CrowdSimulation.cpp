@@ -37,6 +37,7 @@ void App_CrowdSimulation::Start()
 
 	 const float decay{ 0.2f };
 	 const float momentum{ 0.99f};
+
 	//influence maps
 	m_pInfluenceMapFood = new InfluenceMap(50, 50, 8);
 	m_pInfluenceMapFood->SetDecay(decay);
@@ -59,8 +60,6 @@ void App_CrowdSimulation::Start()
 	m_pInfluenceMapThreat->SetMomentum(momentum);
 
 	
-		
-
 	//Spawn food
 	m_pFoodVec.reserve(m_AmountOfFoodItems);
 	for (int idx = 0; idx < m_AmountOfFoodItems; ++idx)
@@ -87,6 +86,7 @@ void App_CrowdSimulation::Start()
 		m_pAnts.push_back(pSoldier);
 	}
 
+	//spawn dead soldier
 	SoldierAnt* pSoldier = new SoldierAnt();
 	pSoldier->SetPosition(m_CenterWorld);
 	pSoldier->SetInfluencePerSecond(10.f);
@@ -109,7 +109,7 @@ void App_CrowdSimulation::Start()
 
 void App_CrowdSimulation::Update(float deltaTime)
 {
-	//stop the simulation the moment the queen is dead or the pause button is hit.
+	//stop the simulation the moment the queen is dead.
 	if(!m_QueenAntIsDead)
 	{
 		m_pInfluenceMapFood->Update(deltaTime);
@@ -119,6 +119,7 @@ void App_CrowdSimulation::Update(float deltaTime)
 		m_pInfluenceMapThreat->Update(deltaTime);
 
 		m_pBlackboard->GetData("Ants", m_pAnts);
+
 		//the first loop is used to update the behavior of the ants
 		for (const auto& ant : m_pAnts)
 		{
@@ -135,6 +136,7 @@ void App_CrowdSimulation::Update(float deltaTime)
 		}
 		
 		m_pBlackboard->GetData("Ants", m_pAnts);
+
 		//delete dead ants
 		for (int i{ static_cast<int>(m_pAnts.size()) - 1 }; i >= 0; --i)
 		{
@@ -148,13 +150,14 @@ void App_CrowdSimulation::Update(float deltaTime)
 		m_pBlackboard->ChangeData("Ants", m_pAnts);
 
 		m_pBlackboard->GetData("FoodSpots", m_pFoodVec);
-		for(int i{ static_cast<int>(m_pFoodVec.size())-1}; i >= 0; --i)
+		for(int i{ static_cast<int>( m_pFoodVec.size()) - 1 }; i >= 0; --i)
 		{
 			if (m_pFoodVec[i]->GetAmount() <= 0)
 			{
 				SAFE_DELETE(m_pFoodVec[i]);
 				
 				float angle = Elite::randomFloat(float(M_PI) * 2);
+				
 				Vector2 pos = m_CenterWorld + Elite::OrientationToVector(angle) * m_FoodDistance;
 
 				m_pFoodVec[i] = new Food(pos, m_FoodAmount);
@@ -227,16 +230,6 @@ void App_CrowdSimulation::UpdateUI()
 		ImGui::Separator();
 		ImGui::Spacing();
 		ImGui::Spacing();
-
-		ImGui::Text("Home");
-		ImGui::Spacing();
-		ImGui::Spacing();
-		ImGui::SliderFloat("Home Radius", &m_homeRadius, 0.0f, 40.f, "%.2");
-
-		ImGui::Text("Food");
-		ImGui::Spacing();
-		ImGui::Spacing();
-		ImGui::SliderFloat("Food Radius", &m_foodRadius, 0.0f, 40.f, "%.2");
 
 		ImGui::Text("Influence Maps");
 		ImGui::Spacing();
@@ -352,6 +345,7 @@ void App_CrowdSimulation::CreateBlackboard()
 
 	WorkerAnt* worker{};
 	m_pBlackboard->AddData("CurrentWorker", worker);
+
 	SoldierAnt* soldier{};
 	m_pBlackboard->AddData("CurrentSoldier", soldier);
 
@@ -378,14 +372,19 @@ void App_CrowdSimulation::CreateBlackboard()
 	m_pBlackboard->AddData("TargetDeadAnt", pTargetDeadAnt);
 	
 	m_pBlackboard->AddData("FoodMap", m_pInfluenceMapFood);
+
 	m_pBlackboard->AddData("HomeMap", m_pInfluenceMapHome);
+	
 	m_pBlackboard->AddData("HungerMap", m_pInfluenceMapHunger);
+	
 	m_pBlackboard->AddData("DeathMap", m_pInfluenceMapDeath);
+	
 	m_pBlackboard->AddData("ThreatMap", m_pInfluenceMapThreat);
 
 	m_pBlackboard->AddData("GarbageSiteLocation", m_GarbageSiteLocation);
 
 	m_pBlackboard->AddData("NumberOfScavangers", 0);
+	
 	m_pBlackboard->AddData("NumberOfCleaners", 0);
 }
 
