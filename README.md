@@ -79,7 +79,7 @@ On their own, these behaviors are very limited, but combining them opens up a wh
 Blended steering assigns a certain weight to each steering behavior. The higher the weight of the behavior, the more influence it will have on the movement of the agent. For example, if you combine the wander behavior and the seek behavior, each with a weight of 50%, you will get "drunk seek": an agent that tries to reach a specific point while never following a straight path.
 
 <p align="center">
-  <img src="Images/DrunkSeek.gif" alt="Gif of drunk seek steerin">
+  <img src="Images/DrunkSeek.gif" alt="Gif of drunk seek steering">
 </p>
 
 
@@ -105,7 +105,7 @@ The selector node attempts to execute each action node until a certain result is
 * Action node returns success: The selector node stops and returns success.
 * Action node returns running: The selector node stops and returns running.
 * Action node returns failed: The selector node starts executing the next child.
-The selector node is the oposite of the sequence node because it will only stop if one of the nodes returns a success.
+The selector node is the opposite of the sequence node because it will only stop if one of the nodes returns a success.
 
 Action nodes are used to make the agent do something and cannot have child nodes. This can be very limiting, especially if in a sequence you want to check if a certain condition is met before executing the rest of the sequence. To solve this, we use **conditional nodes**. Conditional nodes are nodes used to check a condition, and they return either true or false. An example of a selector node using conditional nodes.  
 
@@ -122,12 +122,12 @@ Influence maps are a collection of the influence that agents have on the world. 
 A convolution filter is a blurring technique. Using a small matrix of numbers, also known as a kernel, on each pixel of an image will result in a new image where each pixel is a weighted sum of the pixels in the original image. Using this on an influence map means that each tile on the map will hold the weighted influence of the tiles in the previous iteration.
 
 <p align="center">
-  <img src="Images/ExampleConvolutionFilter.png" alt="Example of bluring an image using a convolution filter from https://blog.naver.com/PostView.nhn?blogId=framkang&logNo=220561249726">
+  <img src="Images/ExampleConvolutionFilter.png" alt="Example of blurring an image using a convolution filter from https://blog.naver.com/PostView.nhn?blogId=framkang&logNo=220561249726">
 </p>  
 
 * The advantage of this is that each tile gets processed only once per iteration.
 * The disadvantage of this is that it cannot combine influences into a new higher influence. It also does not work well when there are only a small number of influence sources.
-The convolution filter used in this project is the folowing. This filter was already present in the framework.
+The convolution filter used in this project is the following. This filter was already present in the framework.
 
 <p align="center">
   <img src="Images/UsedFilter.jpg" alt="The used convolution filter.">
@@ -150,18 +150,18 @@ Combining these two will result in influence propagation that will take the high
 
 ## Creating the project
 ### The ants
-There are 3 types of ants: Queen, SoldierAnt and WorkerAnt. They are all derived from the base class AntBase. This base class contains all the code that every ant type need. This includes: getters and setters for the private variables, update function that updates the influence maps and the movement behavior. The base class also contains a pointer to the map where the ant needs to read from and a list of pointers to maps where it needs to write to. This is because there are situations where ants have influence on multiple maps at once. For example: the queen writes to the home map to indicate where the nest is but also writes to the hunger map to indicate that she needs food. The amount of influence an ant type has on the map is diferent for each type. The queen will have a higher influence than a worker ant. The worker ant class has some extra code for handeling and keeping track of their social stomach. Depending on the job of the worker ant they will have a different color, scavanger ants are orange and cleaner ants are blue.
+There are 3 types of ants: Queen, SoldierAnt and WorkerAnt. They are all derived from the base class AntBase. This base class contains all the code that every ant type need. This includes: getters and setters for the private variables, update function that updates the influence maps and the movement behavior. The base class also contains a pointer to the map where the ant needs to read from and a list of pointers to maps where it needs to write to. This is because there are situations where ants have influence on multiple maps at once. For example: the queen writes to the home map to indicate where the nest is but also writes to the hunger map to indicate that she needs food. The amount of influence an ant type has on the map is different for each type. The queen will have a higher influence than a worker ant. The worker ant class has some extra code for handling and keeping track of their social stomach. Depending on the job of the worker ant they will have a different colour, scavenger ants are orange and cleaner ants are blue.
 
 <p align="center">
   <img src="Images/Ants.png" alt="Screenshots of the different ants in the simulation">
 </p>
 
 <p align="center">
-  <img src="Images/ScavangerAndCleaner.png" alt="Screenshots of a scavanger and cleaner ant">
+  <img src="Images/ScavengerAndCleaner.png" alt="Screenshots of a scavenger and cleaner ant">
 </p>
 
 ### Blended steering
-Each ant classes uses blended steering object with a seek and a wander steering. The wander behavior is used to force the ant to explore. The seek behavior is used to move the ant in the direction of the highest value of the influence map. Bij default the wander steering has a weight of 0.1 while the seek has a weight of 0.9. This can be changed during the simulation using the debug controles.
+Each ant classes uses blended steering object with a seek and a wander steering. The wander behavior is used to force the ant to explore. The seek behavior is used to move the ant in the direction of the highest value of the influence map. By default the wander steering has a weight of 0.1 while the seek has a weight of 0.9. This can be changed during the simulation using the debug controls.
 
 ### Influence maps
 In total there are 5 different influence maps.  
@@ -170,13 +170,13 @@ In total there are 5 different influence maps.
 3. **HungerMap**: this map is used to indicate where ants who need food are.
 4. **DeathMap**: this map is used to indicate where dead ants are.
 5. **ThreatMap**: this map is unused, but was supposed to be used to indicate where invaders are.
-Every frame the ants will write their influence to their respective maps. Every map contains 2 buffers, a front and a back buffer, where influence will be read from and written to respectivly. Every propogation iteration, by default this is every 5 seconds, the influence of each tile will be recalculated using the folowing calculation.  
+Every frame the ants will write their influence to their respective maps. Every map contains 2 buffers, a front and a back buffer, where influence will be read from and written to respectively. Every propagation iteration, by default this is every 5 seconds, the influence of each tile will be recalculated using the following calculation.  
 Influence = sampledInfluence * e^(-cost * decay)
 * decay = the chosen decay value.
-* -cost = the value in the convolution filter that is applicable to the current neighboring tile.
-* sampledInfluence = the influence from the neighboring tile read from the front buffer.
-* Influence = the resulting influence that that neighboring tile has on the central tile.
-This is repeated for each tile around the central tile. The final result is the influence of one of the neighbors with the highest value. This value is then linearly interpolated against the current influence of the tile using the momentum. The result of this is written to the backbuffer. When all tiles have been processed the front and back buffers are swapped.
+* -cost = the value in the convolution filter that is applicable to the current neighbouring tile.
+* sampledInfluence = the influence from the neighbouring tile read from the front buffer.
+* Influence = the resulting influence that that neighbouring tile has on the central tile.
+This is repeated for each tile around the central tile. The final result is the influence of one of the neighbours with the highest value. This value is then linearly interpolated against the current influence of the tile using the momentum. The result of this is written to the back buffer. When all tiles have been processed the front and back buffers are swapped.
 
 ### Behavior Tree
 This is by far the most import and complicated part of the project. There are 4 main branches:
@@ -223,35 +223,34 @@ I will give a short description of how each branch works, going into more detail
 
 # Results
 The created simulation is able to run for a rather long time. Soldier ants constantly protect the queen. Worker ant clean up dead ants and collect food to feed the colony. The queen ant constantly spawns new brood. The trails on the influence maps do not stay long and are prone to errors, ant looping back on themselves.
-Here are few examples of the diferent ants after letting the simulation run for a while:
+Here are few examples of the different ants after letting the simulation run for a while:
 
 Food map:  
 <p align="center">
-  <img src="Images/FoodInfluenceMap.png" alt="FoodInfluenceMap">
+  <img src="Images/FoodInfluenceMap.png" alt="Food Influence Map">
 </p>  
 
 Home map:  
 <p align="center">
-  <img src="Images/HomeInfluence.png" alt="HomeInfluenceMap">
+  <img src="Images/HomeInfluence.png" alt="Home Influence Map">
 </p>
 
 Hunger map:  
 <p align="center">
-  <img src="Images/HungerInfluence.png" alt="HungerInfluenceMap">
+  <img src="Images/HungerInfluence.png" alt="Hunger Influence Map">
 </p>  
 
 Death map:  
 <p align="center">
-  <img src="Images/DeathInfluence.png" alt="DeathInfluenceMap">
+  <img src="Images/DeathInfluence.png" alt="Death InfluenceMap ">
 </p>  
 
-The results are not optimal. I assume this is caused by several posible factors: the values chosen for momentum and decay, the used convolution filter. There also seems to be a problem with the decision making as some cleaner ants, the blue ants, seem to ignore dead ants. Overal the simulation does not quit reach the results I had hoped for.
+The results are not optimal. I assume this is caused by several possible factors: the values chosen for momentum and decay, the used convolution filter. There also seems to be a problem with the decision making as some cleaner ants, the blue ants, seem to ignore dead ants. Overall the simulation does not quit reach the results I had hoped for.
 
 # Conclusion
 The project can run for a rather long time, I am unsure how long. Some parts where not implemented, for example outside threats, and there is still a lot of room for improvement. The different values used for the influence map could be tweaked more or even changed dynamically depending on the situation. The behavior of the ants could be expanded upon or maybe even be made to use something else then a behavior tree. The influence maps could be combined into 1 or more maps where each could influence the value of the other. That would mean that another influence propagation system would need to be used.  
-Making this project I realised that creating a crowed simulation is much more then just combining movement behavior and decision making. You have to plan ahead how the different agents are going to interact with each other. How they interact with the world and how the world influences them. If I where to continue working on this project I would do more extensive research about crowd simulations and influence maps. I would also experiment with changing the values of variables like momentum and decay dynamically while the simulation is running. I would also implement more dificult trerain to simulate the real feeling of an ant hill.
+Making this project I realised that creating a crowed simulation is much more then just combining movement behavior and decision making. You have to plan ahead how the different agents are going to interact with each other. How they interact with the world and how the world influences them. If I where to continue working on this project I would do more extensive research about crowd simulations and influence maps. I would also experiment with changing the values of variables like momentum and decay dynamically while the simulation is running. I would also implement more difficult terrain to simulate the real feeling of an ant hill.
 
-Thank you for reading.
 
 # Sources
 [Crowd simulation Wikipedia](https://en.wikipedia.org/wiki/Crowd_simulation)
@@ -268,4 +267,4 @@ Thank you for reading.
 
 [Coding Adventure: Ant and Slime Simulations by Sebastian Lague](https://www.youtube.com/watch?v=X-iSQQgOd1A)
 
-[AntsCanada, youtube channel that is main source of information about ants](https://www.youtube.com/@AntsCanada)
+[AntsCanada, YouTube channel that is main source of information about ants](https://www.youtube.com/@AntsCanada)
